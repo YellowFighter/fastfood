@@ -71,9 +71,11 @@ else
         G = para.G{ii};
         PI = para.PI{ii};
         XX = bsxfun(@times, XX, B);
+        %keyboard
         T = fwht(XX, d, 'hadamard');
         T = T(PI, :);
         T = bsxfun(@times, T, G*d);
+        keyboard
         THT(((ii-1)*d+1):(ii*d), :) = fwht(T, d, 'hadamard');
     end
     S = para.S;

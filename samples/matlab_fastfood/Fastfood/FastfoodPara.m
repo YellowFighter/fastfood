@@ -42,7 +42,9 @@ for ii = 1:k
     % Chi distribution
     % http://en.wikipedia.org/wiki/Chi_distribution
     % sampling via cumulative distribution function
-    T = gammaincinv(rand(d,1), d/2, 'lower');
+    p1 = rand(d,1);
+    p2 = d/2;
+    T = gammaincinv(p1, d/2, 'lower');
     T = (T*2).^(1/2);
     S{ii} = T * norm(G{ii}, 'fro')^(-1);
 end
@@ -50,6 +52,8 @@ S1 = zeros(n, 1);
 for ii = 1:k
     S1(((ii-1)*d+1):(ii*d)) = S{ii};
 end
+
+size(B)
 
 para.B = B;
 para.G = G;
