@@ -28,6 +28,8 @@ function [PHI, THT] = FastfoodForKernel(X, para, sgm, use_spiral)
 %
 % See also FastfoodPara.
 
+keyboard
+
 if nargin<4
     use_spiral = 0;
 end

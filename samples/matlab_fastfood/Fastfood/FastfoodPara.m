@@ -53,7 +53,7 @@ for ii = 1:k
     S1(((ii-1)*d+1):(ii*d)) = S{ii};
 end
 
-size(B)
+keyboard
 
 para.B = B;
 para.G = G;
