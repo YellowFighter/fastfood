@@ -72,8 +72,9 @@ else
         B = para.B{ii};
         G = para.G{ii};
         PI = para.PI{ii};
+%         keyboard
         XX = bsxfun(@times, XX, B);
-        %keyboard
+%         keyboard
         T = fwht(XX, d, 'hadamard');
         T = T(PI, :);
         T = bsxfun(@times, T, G*d);
@@ -81,7 +82,7 @@ else
         THT(((ii-1)*d+1):(ii*d), :) = fwht(T, d, 'hadamard');
     end
     S = para.S;
-    keyboard
+%     keyboard
     THT = bsxfun(@times, THT, S* d^(1/2));
 end 
 T = THT/sgm;
