@@ -76,6 +76,7 @@ else
         XX = bsxfun(@times, XX, B);
 %         keyboard
         T = fwht(XX, d, 'hadamard');
+        csvwrite(strcat('fwht-xx-',int2str(ii),'.csv'),T);
         T = T(PI, :);
         T = bsxfun(@times, T, G*d);
         %keyboard
