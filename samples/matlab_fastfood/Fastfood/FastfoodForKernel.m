@@ -28,7 +28,7 @@ function [PHI, THT] = FastfoodForKernel(X, para, sgm, use_spiral)
 %
 % See also FastfoodPara.
 
-keyboard
+%keyboard
 
 if nargin<4
     use_spiral = 0;
@@ -77,12 +77,12 @@ else
         T = fwht(XX, d, 'hadamard');
         T = T(PI, :);
         T = bsxfun(@times, T, G*d);
-        keyboard
+        %keyboard
         THT(((ii-1)*d+1):(ii*d), :) = fwht(T, d, 'hadamard');
     end
     S = para.S;
+    keyboard
     THT = bsxfun(@times, THT, S* d^(1/2));
 end 
-
 T = THT/sgm;
 PHI = [cos(T); sin(T)] * n^(-1/2);

@@ -12,13 +12,17 @@
 %%
 clear;
 %% parameter for Fastfood
-d = 100; % dimension of input pattern
+d = 100;  % dimension of input pattern
 n = d*20; % basis number used for approximation
 sgm = 10; % bandwidth for Gaussian kernel
+N = 10;   % number of sample input patterns to generate
 
 %% generate two input patterns
-X1 = randn(d, 2);
-X2 = randn(d, 3);
+X1 = randn(d, N);
+csvwrite('X1.csv',X1);
+X2 = randn(d, 1.5*N);
+csvwrite('X2.csv',X2);
+disp('Wrote X1 to X1.csv and X2 to X2.csv')
 
 %% exact calculation of Gaussian kernel
 K_exact = zeros(size(X1,2), size(X2,2));

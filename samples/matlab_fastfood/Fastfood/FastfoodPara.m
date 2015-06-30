@@ -53,9 +53,14 @@ for ii = 1:k
     S1(((ii-1)*d+1):(ii*d)) = S{ii};
 end
 
-keyboard
+%keyboard
 
 para.B = B;
 para.G = G;
 para.PI = PI;
 para.S = S1;
+
+csvwrite('B.csv',B);
+csvwrite('G.csv',G);
+csvwrite('PI.csv',PI);
+csvwrite('S.csv',S);
