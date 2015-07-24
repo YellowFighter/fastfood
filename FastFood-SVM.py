@@ -36,6 +36,7 @@ y = digits.target
 print('Shape of y:', y.shape)
 
 np.savetxt('digits-2.csv', X1, delimiter=',')
+np.savetxt('digits-2-y.csv', y, delimiter=',')
 print("Wrote digits to digits-2.csv")
 
 # pad with zeros so d is nearest power of 2
@@ -72,6 +73,7 @@ def fastfood_params(n, d):
         B_ii = rng.choice([-1, 1], size=d)
         G_ii = rng.normal(size=d)
         PI_ii = rng.permutation(d)
+        print('PI_ii=', PI_ii)
 
         B.append(B_ii)
         G.append(G_ii)

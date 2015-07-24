@@ -1,3 +1,6 @@
 .ipynb_checkpoints/
 *~
 samples/**/*.csv
+*.csv
+data_sets/
+.Rhistory
