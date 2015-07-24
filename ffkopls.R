@@ -1,24 +1,34 @@
 library(kopls)
 library(AUC)
 library(kernlab)
-library(foreach)
-library(doParallel)
+library(permute)
 
-setwd('~/dev/fastfood')
+setwd('~/fastfood')
+
+generate.ytr <- function(y) {
+  uniq.values <- sort(unique(y))
+  n.uniq <- length(uniq.values)
+  ytr <- matrix(0,nrow=length(y),ncol=n.uniq)
+  for(i in 1:n.uniq) {
+    ytr[y==uniq.values[i],i] <- 1
+  }
+  print(ytr)
+  a <- list()
+  a$ytr <- ytr
+  a$n.ortho <- n.uniq
+  return(a)
+}
 
 optimize.kopls <- function(K,y,noxRange,kfold=2,cluster.size=7) {
-  cl <- makeCluster(cluster.size)
-  registerDoParallel(cl)
-  
   a <- generate.ytr(y)
-  ytr <- a[1]
-  n_ortho <- a[2]
+  ytr <- a$ytr
+  n_ortho <- a$n.ortho
   kcauc <- matrix(0,nrow=length(noxRange),ncol=kfold)
-  test.inxs <- generate.test.inxs(nrow(X),kfold)
+  test.inxs <- generate.test.inxs(nrow(K),kfold)
   
   print('optimizing nox...')
   if(length(noxRange) > 1) {
-    kcauc <- foreach(i=1:length(noxRange),.packages=c('kernlab','AUC','kopls'),.combine=rbind) %dopar% {
+    for(i in 1:length(noxRange)) {
       n <- noxRange[i]
       kcauc.values <- c()
       for(j in 1:kfold) {
@@ -28,11 +38,10 @@ optimize.kopls <- function(K,y,noxRange,kfold=2,cluster.size=7) {
                             preProcK='no',preProcY='mc')
         modelPred <- koplsPredict(K[test,-test],K[test,test],K[-test,-test],
                                   model,n,rescaleY=T)
-        labels <- factor(ytr[test,2])
+        labels <- factor(ytr[test,])
         kcauc.values[j] <- auc(roc(modelPred$Yhat[,2],labels))
         kcauc[i,] <- kcauc.values
       }
-      return(kcauc.values)
     }
     b <- which.max(rowMeans(kcauc))
     nox <- noxRange[b[1]]
@@ -54,15 +63,6 @@ generate.test.inxs <- function(n,kfold) {
     test.inxs[[i]] <- t.inxs[start:end]
   }
   return(test.inxs)
-}
-
-generate.ytr <- function(y) {
-  values <- sort(unique(y))
-  ytr <- matrix(0,nrow=length(y),ncol=length(values))
-  for(i in 1:length(values)) {
-    ytr[y==values[i],i] <- 1
-  }
-  return(c(ytr,length(values)))
 }
 
 predict.kopls <- function(K,y,nox,test.inxs) {
@@ -87,24 +87,25 @@ predict.kopls <- function(K,y,nox,test.inxs) {
 }
 
 # load X, Y
-X <- read.csv('data_sets/tb/proc_x.csv',header=F)
+X <- read.csv('data_sets/synthetic/X.csv',header=F)
 X <- as.matrix(X)
-Y <- read.csv('data_sets/tb/proc_y.csv',header=F)
-Y <- as.matrix(Y)
+y <- read.csv('data_sets/synthetic/y.csv',header=F)
+y <- as.matrix(y)
 
 # read in the FF phi matrix as computed in matlab
 print('Make sure phi.csv exists properly, then press [enter]')
 readline()
 print('Continuing...')
-phi <- read.csv('data_sets/tb/phi.csv',header=F)
+phi <- read.csv('data_sets/synthetic/phi.csv',header=F)
 phi <- as.matrix(phi)
 
 # compute the FF kernel
 print('Computing FF kernel matrix ...')
-#K <- phi%*%t(phi)
 st.ff.kcalc <- system.time(
   K <- crossprod(phi))
+st.ff.kcalc <- st.ff.kcalc[3]
 K <- as.kernelMatrix(K)
+print(paste("Took",st.ff.kcalc,"seconds."))
 
 # hyperparams
 kfold <- 5
