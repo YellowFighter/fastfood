@@ -60,7 +60,7 @@ para.G = G;
 para.PI = PI;
 para.S = S1;
 
-csvwrite('B.csv',B);
-csvwrite('G.csv',G);
-csvwrite('PI.csv',PI);
-csvwrite('S.csv',S);
+% csvwrite('B.csv',B);
+% csvwrite('G.csv',G);
+% csvwrite('PI.csv',PI);
+% csvwrite('S.csv',S);

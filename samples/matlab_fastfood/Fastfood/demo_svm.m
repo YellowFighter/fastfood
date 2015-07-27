@@ -1,5 +1,5 @@
 % Load data.
-X = csvread('~/dev/fastfood/data_sets/tb/proc_x.csv');
+X = csvread('~/dev/fastfood/data_sets/synthetic/X.csv');
 [N,D] = size(X); % size of input data
 fprintf('Loaded %d samples of dimensionality %d\n',N,D);
 
@@ -10,5 +10,5 @@ sgm = 10; % bandwidth of gaussian kernel
 para = FastfoodPara(n,D);
 %phi = FastfoodForKernel(Xtrain', para, sgm, false)';
 phi = FastfoodForKernel(X', para, sgm, false)';
-csvwrite('~/dev/fastfood/data_sets/tb/phi.csv',phi);
+csvwrite('~/dev/fastfood/data_sets/synthetic/phi.csv',phi);
 fprintf('Dimensions of transformed data: %dx%d\n',size(phi));

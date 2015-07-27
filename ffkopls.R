@@ -3,7 +3,7 @@ library(AUC)
 library(kernlab)
 library(permute)
 
-setwd('~/fastfood')
+setwd('~/dev/fastfood')
 
 generate.ytr <- function(y) {
   uniq.values <- sort(unique(y))
@@ -87,16 +87,16 @@ predict.kopls <- function(K,y,nox,test.inxs) {
 }
 
 # load X, Y
-X <- read.csv('data_sets/synthetic/X.csv',header=F)
+X <- read.csv('data_sets/tb/proc_x.csv',header=F)
 X <- as.matrix(X)
-y <- read.csv('data_sets/synthetic/y.csv',header=F)
+y <- read.csv('data_sets/tb/proc_y.csv',header=F)
 y <- as.matrix(y)
 
 # read in the FF phi matrix as computed in matlab
 print('Make sure phi.csv exists properly, then press [enter]')
 readline()
 print('Continuing...')
-phi <- read.csv('data_sets/synthetic/phi.csv',header=F)
+phi <- read.csv('data_sets/tb/phi.csv',header=F)
 phi <- as.matrix(phi)
 
 # compute the FF kernel
