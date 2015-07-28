@@ -29,7 +29,7 @@ load.dataset <- function(nam,holdout=0.3) {
     } else {
       files <- NULL
     }
-
+    
     if (!is.null(files)) {
       for(i in 1:length(files)) {
         files[i] <- paste('data_sets',files[i],sep='/')
@@ -43,7 +43,7 @@ load.dataset <- function(nam,holdout=0.3) {
       dataset$d0 <- a[2]
       dataset$y <- as.factor(as.matrix(read.csv(files[2],header=F)))
       dataset$phi <- as.matrix(read.csv(files[3],header=F))
-
+      
       # Generate train indices and subset to create the train and test sets.
       dataset$train.inxs <- train.inxs <- generate.train.inxs(dataset$n,holdout=holdout)
       dataset$X.train <- dataset$X[train.inxs,]
@@ -96,7 +96,7 @@ evaluate.rf <- function(X.train,y.train,X.test,y.test,ntree=500) {
   
   return(results)
 }
-evaluate.ff.rf <- function(data,ntree=500) {
+evaluate.rf.ff <- function(data,ntree=500) {
   results <- evaluate.rf(data$phi.train,
                          data$y.train,
                          data$phi.test,
@@ -104,75 +104,50 @@ evaluate.ff.rf <- function(data,ntree=500) {
                          ntree=ntree)
   return(results)
 }
+evaluate.rf.std <- function(data,ntree=500) {
+  results <- evaluate.rf(data$X.train,
+                         data$y.train,
+                         data$X.test,
+                         data$y.test,
+                         ntree=ntree)
+  return(results)
+}
 
-### SVM
-evaluate.svm <- function(X.train,y.train,X.test,y.test,kernel='radial') {
-  # general method to evaluate an SVM (either FF or std, based on inputs
+### OPLS/KOPLS
+evaluate.opls <- function(X.train,y.train,X.test,y.test,n.ortho=3,learner=kopls) {
+  # general method to evaluate OPLS (either FF or std, based on inputs)
   results <- list()
   results$st <- list() # system time of various actions
   results$pred <- list() # results of prediction (various stats)
   
   results$st$train <- system.time( # Time the training of the model
-    results$model <- model <- svm(X.train,
-                                  y.train,
-                                  kernel=kernel))
+    results$model <- model <- learner(X.train,
+                                      y.train,
+                                      n.ortho=n.ortho))
   
   results$st$test <- system.time( # Time the testing of the model
-    results$pred$yhat <- yhat <- predict(model,X.test)
-  )
+    results$pred$yhat <- yhat <- predict(model, X.test))
   
   results$pred$mcr <- calc.mcr(y.test,yhat)
   
   return(results)
 }
-evaluate.ff.svm <- function(data) {
-  results <- evaluate.svm(data$phi.train,
-                          data$y.train,
-                          data$phi.test,
-                          data$y.test,
-                          kernel='linear')
+evaluate.opls.ff <- function(data,n.ortho=3) {
+  results <- evaluate.opls(data$phi.train,
+                           data$y.train,
+                           data$phi.test,
+                           data$y.test,
+                           n.ortho=n.ortho,
+                           learner=opls)
   return(results)
 }
-evaluate.std.svm <- function(data) {
-  results <- evaluate.svm(data$X.train,
-                          data$y.train,
-                          data$X.test,
-                          data$y.test,
-                          kernel='radial')
-  return(results)
-}
-
-### Adaboost
-evaluate.adaboost <- function(X.train,y.train,X.test,y.test) {
-  # general method to evaluate adaboost (either FF or std, based on inputs)
-  results <- list()
-  results$st <- list() # system time of various actions
-  results$pred <- list() # results of prediction (various stats)
-  
-  results$st$train <- system.time( # Time the training of the model
-    results$model <- model <- ada(X.train,
-                                  y.train))
-  
-  results$st$test <- system.time( # Time the testing of the model
-    results$pred$yhat <- yhat <- predict(model,X.test)
-  )
-  
-  results$pred$mcr <- calc.mcr(y.test,yhat)
-  
-  return(results)
-}
-evaluate.ff.adaboost <- function(data) {
-  results <- evaluate.adaboost(data$phi.train,
-                               data$y.train,
-                               data$phi.test,
-                               data$y.test)
-  return(results)
-}
-evaluate.std.adaboost <- function(data) {
-  results <- evaluate.adaboost(data$X.train,
-                               data$y.train,
-                               data$X.test,
-                               data$y.test)
+evaluate.opls.std <- function(data,n.ortho=3) {
+  results <- evaluate.opls(data$phi.train,
+                           data$y.train,
+                           data$phi.test,
+                           data$y.test,
+                           n.ortho=n.ortho,
+                           learner=kopls)
   return(results)
 }
 
@@ -183,13 +158,9 @@ data <- load.dataset('tb')
 results <- list()
 # Fastfood algorithms
 results$ff <- list()
-results$ff$rf <- evaluate.ff.rf(data)
-#results$ff$svm <- evaluate.ff.svm(data)
-#results$ff$opls <- evaluate.ff.opls(data)
-results$ff$adaboost <- evaluate.ff.adaboost(data)
+results$ff$rf <- evaluate.rf.ff(data)
+results$ff$opls <- evaluate.opls.ff(data)
 # Standard algorithms
 results$std <- list()
-results$std$rf <- evaluate.std.rf(data)
-results$std$svm <- evaluate.std.svm(data)
-results$std$adaboost <- evaluate.std.adaboost(data)
-#results$std$kopls <- evaluate.ff.kopls(data)
+results$std$rf <- evaluate.opls.std(data)
+results$std$opls <- evaluate.opls.std(data)
