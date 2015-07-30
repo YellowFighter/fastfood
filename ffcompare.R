@@ -3,6 +3,9 @@ library(e1071) # for svm
 library(microbenchmark)
 library(randomForest) # for random forest
 library(ada) # for adaboost
+library(data.table) # for fread (reading csvs)
+library(glmnet) # for elastic net
+library(ppls) # for penalized least squares
 set.seed(0) # is this all I need to do?
 
 ## Utility functions.
@@ -29,21 +32,24 @@ load.dataset <- function(nam,holdout=0.3) {
     } else {
       files <- NULL
     }
-    
+
     if (!is.null(files)) {
       for(i in 1:length(files)) {
         files[i] <- paste('data_sets',files[i],sep='/')
       }
-      
+
       # Load raw X, y, and phi.
       dataset <- list()
-      dataset$X <- as.matrix(read.csv(files[1],header=F))
+      print(paste("Loading predictor matrix from '",files[1],"'",sep=''))
+      dataset$X <- as.matrix(fread(files[1],header=F))
       a <- dim(dataset$X)
       dataset$n <- a[1]
       dataset$d0 <- a[2]
-      dataset$y <- as.factor(as.matrix(read.csv(files[2],header=F)))
-      dataset$phi <- as.matrix(read.csv(files[3],header=F))
-      
+      print(paste("Loading labels from '",files[2],"'",sep=''))
+      dataset$y <- as.factor(as.matrix(fread(files[2],header=F)))
+      print(paste("Loading phi matrix from '",files[3],"'",sep=''))
+      dataset$phi <- as.matrix(fread(files[3],header=F))
+
       # Generate train indices and subset to create the train and test sets.
       dataset$train.inxs <- train.inxs <- generate.train.inxs(dataset$n,holdout=holdout)
       dataset$X.train <- dataset$X[train.inxs,]
@@ -52,7 +58,7 @@ load.dataset <- function(nam,holdout=0.3) {
       dataset$X.test <- dataset$X[-train.inxs,]
       dataset$y.test <- dataset$y[-train.inxs]
       dataset$phi.test <- dataset$phi[-train.inxs,]
-      
+
       print(paste(
         "Loaded dataset '",
         nam,
@@ -82,18 +88,18 @@ evaluate.rf <- function(X.train,y.train,X.test,y.test,ntree=500) {
   results <- list()
   results$st <- list() # system time of various actions
   results$pred <- list() # results of prediction (various stats)
-  
+
   results$st$train <- system.time( # Time the training of the model
     results$model <- model <- randomForest(X.train,
                                            y.train,
                                            ntree=ntree,
                                            prox=T))
-  
+
   results$st$test <- system.time( # Time the testing of the model
     results$pred$yhat <- yhat <- predict(model, X.test))
-  
+
   results$pred$mcr <- calc.mcr(y.test,yhat)
-  
+
   return(results)
 }
 evaluate.rf.ff <- function(data,ntree=500) {
@@ -114,22 +120,26 @@ evaluate.rf.std <- function(data,ntree=500) {
 }
 
 ### OPLS/KOPLS
-evaluate.opls <- function(X.train,y.train,X.test,y.test,n.ortho=3,learner=kopls) {
+evaluate.opls <- function(K,Y,test,n.ortho=3,nox=2) {
   # general method to evaluate OPLS (either FF or std, based on inputs)
   results <- list()
   results$st <- list() # system time of various actions
   results$pred <- list() # results of prediction (various stats)
-  
+  koplsModel(K[-test,-test],ytr[-test,],n_ortho,n,
+             preProcK='no',preProcY='mc')
+  modelPred <- koplsPredict(K[test,-test],K[test,test],K[-test,-test],
+                            model,n,rescaleY=T)
   results$st$train <- system.time( # Time the training of the model
-    results$model <- model <- learner(X.train,
-                                      y.train,
-                                      n.ortho=n.ortho))
-  
+    results$model <- model <- koplsModel(K[test,-test],
+                                         Y[-test,],
+                                         n.ortho,
+                                         nox))
+
   results$st$test <- system.time( # Time the testing of the model
-    results$pred$yhat <- yhat <- predict(model, X.test))
-  
+    results$pred$yhat <- yhat <- koplsPredict(model, X.test))
+
   results$pred$mcr <- calc.mcr(y.test,yhat)
-  
+
   return(results)
 }
 evaluate.opls.ff <- function(data,n.ortho=3) {
@@ -137,8 +147,7 @@ evaluate.opls.ff <- function(data,n.ortho=3) {
                            data$y.train,
                            data$phi.test,
                            data$y.test,
-                           n.ortho=n.ortho,
-                           learner=opls)
+                           n.ortho=n.ortho)
   return(results)
 }
 evaluate.opls.std <- function(data,n.ortho=3) {
@@ -151,6 +160,70 @@ evaluate.opls.std <- function(data,n.ortho=3) {
   return(results)
 }
 
+### Elastic Net
+evaluate.en <- function(X.train,y.train,X.test,y.test) {
+  # general method to evaluate elastic net (either FF or std, based on inputs)
+  results <- list()
+  results$st <- list() # system time of various actions
+  results$pred <- list() # results of prediction (various stats)
+
+  results$st$train <- system.time( # Time the training of the model
+    results$model <- model <- glmnet(X.train,y.train,family='gaussian'))
+
+  results$st$test <- system.time( # Time the testing of the model
+    results$pred$yhat <- yhat <- predict(model, X.test))
+
+  results$pred$mcr <- calc.mcr(y.test,yhat)
+
+  return(results)
+}
+evaluate.en.ff <- function(data) {
+  results <- evaluate.en(data$phi.train,
+                         as.integer(data$y.train),
+                         data$phi.test,
+                         as.integer(data$y.test))
+  return(results)
+}
+evaluate.en.std <- function(data) {
+  results <- evaluate.en(data$X.train,
+                           as.integer(data$y.train),
+                           data$X.test,
+                           as.integer(data$y.test))
+  return(results)
+}
+
+### Penalized least squares
+evaluate.penls <- function(X.train,y.train,X.test,y.test) {
+  # general method to evaluate penalized least squares (either FF or std, based on inputs)
+  results <- list()
+  results$st <- list() # system time of various actions
+  results$pred <- list() # results of prediction (various stats)
+  
+  results$st$train <- system.time( # Time the training of the model
+    results$model <- model <- penalized.pls(X.train,y.train))
+  
+  results$st$test <- system.time( # Time the testing of the model
+    results$pred$yhat <- yhat <- new.penalized.pls(model,X.test))
+  
+  results$pred$mcr <- calc.mcr(y.test,yhat)
+  
+  return(results)
+}
+evaluate.penls.ff <- function(data) {
+  results <- evaluate.en(data$phi.train,
+                         as.numeric(data$y.train),
+                         data$phi.test,
+                         as.numeric(data$y.test))
+  return(results)
+}
+evaluate.penls.std <- function(data) {
+  results <- evaluate.en(data$X.train,
+                         as.numeric(data$y.train),
+                         data$X.test,
+                         as.numeric(data$y.test))
+  return(results)
+}
+
 # Load data set.
 data <- load.dataset('tb')
 
@@ -160,7 +233,11 @@ results <- list()
 results$ff <- list()
 results$ff$rf <- evaluate.rf.ff(data)
 results$ff$opls <- evaluate.opls.ff(data)
+results$ff$en <- evaluate.en.ff(data)
+results$ff$penls <- evaluate.penls.ff(data)
 # Standard algorithms
 results$std <- list()
-results$std$rf <- evaluate.opls.std(data)
+results$std$rf <- evaluate.rf.std(data)
 results$std$opls <- evaluate.opls.std(data)
+results$std$en <- evaluate.en.std(data)
+results$std$penls <- evaluate.penls.std(data)
