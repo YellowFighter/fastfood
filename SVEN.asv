@@ -15,8 +15,8 @@ if 2*p > n
     global X
     K = Xnew'*Xnew;
     X = Xnew;
-    [w,b] = primal_svm(X',Ynew,K,0,C,{}); % yields [w,b0]
-    alpha = C*max([1-Ynew.*((K*w)+b),zeros(size(Ynew))],[],2);
+    [w,~] = primal_svm(X',Ynew,K,0,C,{}); % yields [w,b0]
+    alpha = C*max(1-Ynew.*(K*w),0);
 else
     alpha = SVMDual(Xnew,Ynew,C);
 end
