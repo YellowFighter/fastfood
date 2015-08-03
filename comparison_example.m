@@ -1,7 +1,7 @@
-X = randn(10000000,150);
+X = randn(1000,150);
 r = zeros(size(X,2),1);
-r(1:5)= [0;3;0;-3;0]; % only two nonzero coefficients
-y = X*r + randn(100,1)*.1; % small added noise
+r(1:5)= [0;3;0;-3;0]; % only two nonzero coefficients (2,4)
+y = X*r + randn(size(X,1),1)*.1; % small added noise
 
 lambda2 = 0.1;
 alpha = 0.5;
