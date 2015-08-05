@@ -31,8 +31,10 @@ options = statset('UseParallel',use_parallel);
 B = lasso(X,y,'alpha',alpha,'lambda',lambda2);
 find(B(:,1) ~= 0) % should only return 2,4
 mse = crossval('mse',X,y,'partition',cp,...
-    'Predfun',@(xtrain,ytrain,xtest) cv_lasso(xtrain,ytrain,xtest,alpha,lambda2)); % perform CV to get a MSE
-printf('MSE for built-in LASSO: %f\n',mse);
+    'Predfun',@(xtrain,ytrain,xtest) cv_lasso(xtrain,ytrain,xtest,alpha,lambda2,options)); % perform CV to get a MSE
+mse0 = (1/size(y,1))*sum((y-mean(y)).^2);
+nmse = mse/mse0;
+fprintf('NMSE for built-in LASSO: %f\n',nmse);
 
 %% SVEN
 beta = SVEN(X',y',t,lambda2);

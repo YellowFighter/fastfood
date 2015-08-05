@@ -42,6 +42,7 @@ for k = 1:length(n_values)
             r(inxs(1:num_nonzero)) = s.*(3 + 2*rand(1,num_nonzero));
             y = y_func(X,r);
             X = zscore(X); % mean center and unit variance
+            mse0 = (1/size(y,1))*sum((y-mean(y)).^2);
             
             %% (Hyper-)params
             lambda2 = 0.1;
@@ -54,16 +55,22 @@ for k = 1:length(n_values)
             %% Built-in lasso
             acclasso(i) = crossval('mse',X,y,'partition',cp,...
                 'Predfun',@(xtrain,ytrain,xtest) cv_lasso(xtrain,ytrain,xtest,alpha,lambda2,options)); % perform CV to get a MSE
-             fprintf('\t\tacclasso = %f\n',acclasso(i));
+            nmse = mse/mse0;
+            acclasso(i) = nmse;
+            fprintf('\t\tacclasso = %f\n',acclasso(i));
             
             %% SVEN
             accsven(i) = crossval('mse',X,y,'partition',cp,...
                 'Predfun',@(xtrain,ytrain,xtest) cv_sven(xtrain,ytrain,xtest,t,lambda2)); % perform CV to get a MSE
+            nmse = mse/mse0;
+            accsven(i) = nmse;
             fprintf('\t\taccsven = %f\n',accsven(i));
             
             %% FFEN
-            accffen(i) = crossval('mse',X,y,'partition',cp,...
+            mse = crossval('mse',X,y,'partition',cp,...
                 'Predfun',@(xtrain,ytrain,xtest) cv_ffen(xtrain,ytrain,xtest,alpha,lambda2,options)); % perform CV to get a MSE
+            nmse = mse/mse0;
+            accfen(i) = nmse;
             fprintf('\t\taccffen = %f\n',accffen(i));
         end
         
