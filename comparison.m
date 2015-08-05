@@ -1,9 +1,9 @@
 %% Generate/load data
-ntimes = 10;
+ntimes = 1;
 y_func = @(X,r) (X*r + randn(size(X,1),1)*.1);
 
-n_values = [1000,10000];%,100000];
-d_values = [150,300];%,600,1000,10000];
+n_values = [100000]; %[1000,10000,100000];
+d_values = [600,1000,10000];%[150,300,600,1000,10000];
 timing_data = {};
 
 rng(1);
@@ -88,5 +88,6 @@ for k = 1:length(n_values)
         fprintf('ntimes = %d, n = %d, d = %d\n',ntimes,n,d);
         fprintf('tlasso: %f, %f\n',mean(tlasso),std(tlasso));
         fprintf('tsven: %f, %f\n',mean(tsven),std(tsven));
+        fprintf('\n');
     end
 end
