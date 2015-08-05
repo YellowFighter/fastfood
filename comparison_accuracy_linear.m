@@ -1,4 +1,11 @@
 %rng(1);
+warning('off','all');
+try % test whether we can use Spiral package
+    fwht_spiral([1; 1]);
+    use_spiral = 1;
+catch
+    use_spiral = 0;
+end
 
 ntimes = 1;
 frac_nonzero = 0.1;
@@ -69,7 +76,7 @@ for k = 1:length(n_values)
         %% FFEN
         trIdx = cp.training;
         teIdx = cp.test;
-        ytest = cv_ffen(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,para,sigma);
+        ytest = cv_ffen(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,para,sigma,use_spiral);
         mse = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
         ssres = sum((ytest-y(teIdx)).^2);
         sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
