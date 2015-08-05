@@ -1,5 +1,14 @@
 rng(1);
 warning('off','all');
+try
+    matlabpool open;
+    use_parallel = true;
+catch
+    display('Can not open matlab pool.');
+    use_parallel = false;
+end
+options = statset('UseParallel',use_parallel);
+
 ntimes = 10;
 frac_nonzero = 0.1;
 
@@ -43,17 +52,17 @@ for k = 1:length(n_values)
             
             %% Built-in lasso
             acclasso(i) = crossval('mse',X,y,'partition',cp,...
-                'Predfun',@(xtrain,ytrain,xtest) cv_lasso(xtrain,ytrain,xtest,alpha,lambda2)); % perform CV to get a MSE
+                'Predfun',@(xtrain,ytrain,xtest) cv_lasso(xtrain,ytrain,xtest,alpha,lambda2,options)); % perform CV to get a MSE
             fprintf('acclasso = %f, ',acclasso);
             
             %% SVEN
             accsven(i) = crossval('mse',X,y,'partition',cp,...
-                'Predfun',@(xtrain,ytrain,xtest) cv_sven(xtrain,ytrain,xtest,t,lambda2)); % perform CV to get a MSE
+                'Predfun',@(xtrain,ytrain,xtest) cv_sven(xtrain,ytrain,xtest,t,lambda2,options)); % perform CV to get a MSE
             fprintf('accsven = %f, ',accsven);
             
             %% FFEN
             accffen(i) = crossval('mse',X,y,'partition',cp,...
-                'Predfun',@(xtrain,ytrain,xtest) cv_ffen(xtrain,ytrain,xtest,alpha,lambda2)); % perform CV to get a MSE
+                'Predfun',@(xtrain,ytrain,xtest) cv_ffen(xtrain,ytrain,xtest,alpha,lambda2,options)); % perform CV to get a MSE
             fprintf('accffen = %f\n',accffen);
         end
         
