@@ -41,8 +41,6 @@ for k = 1:length(n_values)
         cp = cvpartition(n,'holdout',0.3); % hold out 30% for testing
 
         %% Built-in lasso
-        mses = [];
-        r2s = [];
         trIdx = cp.training;
         teIdx = cp.test;
         ytest = cv_lasso(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2);
@@ -55,8 +53,6 @@ for k = 1:length(n_values)
         fprintf('\tacclasso nmse = %f, r^2 = %f\n',acclasso(1),acclasso(2));
 
         %% SVEN
-        mses = [];
-        r2s = [];
         trIdx = cp.training;
         teIdx = cp.test;
         ytest = cv_sven(X(trIdx,:),y(trIdx),X(teIdx,:),t,lambda2);
@@ -70,8 +66,6 @@ for k = 1:length(n_values)
 
 
         %% FFEN
-        mses = [];
-        r2s = [];
         trIdx = cp.training;
         teIdx = cp.test;
         ytest = cv_ffen(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2);
