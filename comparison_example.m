@@ -1,5 +1,12 @@
 warning('off','all'); % turn off all warnings
 rng(0); % seed random number generator
+try
+    matlabpool open;
+    use_parallel = true;
+catch
+    display('Unable to open matlab pool')
+    use_parallel = false;
+end
 
 %% Generate/load data
 % generate a linear dataset
@@ -18,6 +25,7 @@ t = lambda2*alpha; % SVEN parameter
 cp = cvpartition(n,'kfold',5); % create the 5-fold partitions
 N = d*20; % number of basis functions to use for FF approximation
 sigma = 10; % band-width of Gaussian kernel
+options = statset('UseParallel',use_parallel);
 
 %% Built-in lasso
 B = lasso(X,y,'alpha',alpha,'lambda',lambda2);
