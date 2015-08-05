@@ -22,12 +22,13 @@ for k = 1:length(n_values)
     n = n_values(k);
     for z = 1:length(d_values)
         d = d_values(z);
-        fprintf('iter n = %d, d = %d\n',n,d);
+        fprintf('data n = %d, d = %d\n',n,d);
         
         acclasso = [];
         accsven = [];
         accffen = [];
         for i = 1:ntimes
+            fprintf('\titer %d\n',i);
             X = randn(n,d);
             r = zeros(size(X,2),1);
             inxs = randperm(d);
