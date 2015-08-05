@@ -1,13 +1,4 @@
 %rng(1);
-warning('off','all');
-try
-    matlabpool open;
-    use_parallel = true;
-catch
-    display('Can not open matlab pool.');
-    use_parallel = false;
-end
-options = statset('UseParallel',use_parallel);
 
 ntimes = 1;
 frac_nonzero = 0.1;
@@ -54,7 +45,7 @@ for k = 1:length(n_values)
         r2s = [];
         trIdx = cp.training;
         teIdx = cp.test;
-        ytest = cv_lasso(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,options);
+        ytest = cv_lasso(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2);
         mse = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
         ssres = sum((ytest-y(teIdx)).^2);
         sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
@@ -83,7 +74,7 @@ for k = 1:length(n_values)
         r2s = [];
         trIdx = cp.training;
         teIdx = cp.test;
-        ytest = cv_ffen(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,options);
+        ytest = cv_ffen(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2);
         mse = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
         ssres = sum((ytest-y(teIdx)).^2);
         sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
