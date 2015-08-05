@@ -38,6 +38,7 @@ for k = 1:length(n_values)
         t = lambda2*alpha;
         N = d*20; % number of basis functions to use for approximation
         para = FastfoodPara(N,d); % generate FF parameters
+        sigma = 10; % band-width of Gaussian kernel
         cp = cvpartition(n,'holdout',0.3); % hold out 30% for testing
 
         %% Built-in lasso
@@ -68,7 +69,7 @@ for k = 1:length(n_values)
         %% FFEN
         trIdx = cp.training;
         teIdx = cp.test;
-        ytest = cv_ffen(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2);
+        ytest = cv_ffen(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,para,sigma);
         mse = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
         ssres = sum((ytest-y(teIdx)).^2);
         sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
