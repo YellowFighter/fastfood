@@ -57,7 +57,7 @@ for k = 1:length(n_values)
             
             %% SVEN
             accsven(i) = crossval('mse',X,y,'partition',cp,...
-                'Predfun',@(xtrain,ytrain,xtest) cv_sven(xtrain,ytrain,xtest,t,lambda2,options)); % perform CV to get a MSE
+                'Predfun',@(xtrain,ytrain,xtest) cv_sven(xtrain,ytrain,xtest,t,lambda2)); % perform CV to get a MSE
             fprintf('accsven = %f, ',accsven);
             
             %% FFEN
