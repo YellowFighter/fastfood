@@ -16,7 +16,8 @@ n_values = [100,1000];%10000,100000];
 d_values = [150,300,600];%,1000,10000];
 accuracy_data = {};
 
-y_func = @(X,r) (X*r + randn(size(X,1),1)*.1); % linear function
+%y_func = @(X,r) X*r + randn(size(X,1),1)*.1; % linear function
+y_func = @(X,r) (X + X.^2 + X.^3)*r + randn(size(X,1),1)*.1; % 3rd order function
 
 for k = 1:length(n_values)
     n = n_values(k);
