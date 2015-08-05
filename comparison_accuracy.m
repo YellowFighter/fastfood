@@ -42,6 +42,7 @@ for k = 1:length(n_values)
             r(inxs(1:num_nonzero)) = s.*(3 + 2*rand(1,num_nonzero));
             y = y_func(X,r);
             X = zscore(X); % mean center and unit variance
+            y = zscore(y); % mean center and unit variance
             mse0 = (1/size(y,1))*sum((y-mean(y)).^2);
             
             %% (Hyper-)params
