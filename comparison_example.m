@@ -38,8 +38,8 @@ N = d*20; % number of basis functions to use for approximation
 para = FastfoodPara(N,d);
 sigma = 10; % band-width of Gaussian kernel
 tic;
-phi = FastfoodForKernel(X',sigma,para,use_spiral)';
+phi = FastfoodForKernel(X',para,sigma,use_spiral)';
 tphi = toc;
 tic;
-B = lasso(phi,Y);
+B = lasso(phi,y);
 tffen = toc;
