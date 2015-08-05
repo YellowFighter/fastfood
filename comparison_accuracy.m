@@ -12,7 +12,7 @@ options = statset('UseParallel',use_parallel);
 ntimes = 10;
 frac_nonzero = 0.1;
 
-n_values = [100,1000]%10000,100000];
+n_values = [100,1000];%10000,100000];
 d_values = [150,300,600];%,1000,10000];
 accuracy_data = {};
 
