@@ -87,3 +87,7 @@ for k = 1:length(n_values)
         fprintf('accffen: %f, %f\n',mean(accffen),std(accffen));
     end
 end
+
+if use_parallel
+    matlabpool close;
+end
