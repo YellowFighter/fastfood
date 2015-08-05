@@ -53,14 +53,14 @@ for k = 1:length(n_values)
             cp = cvpartition(n,'kfold',5); % create the 5-fold partitions
             
             %% Built-in lasso
-            acclasso(i) = crossval('mse',X,y,'partition',cp,...
+            mse = crossval('mse',X,y,'partition',cp,...
                 'Predfun',@(xtrain,ytrain,xtest) cv_lasso(xtrain,ytrain,xtest,alpha,lambda2,options)); % perform CV to get a MSE
             nmse = mse/mse0;
             acclasso(i) = nmse;
             fprintf('\t\tacclasso = %f\n',acclasso(i));
             
             %% SVEN
-            accsven(i) = crossval('mse',X,y,'partition',cp,...
+            mse = crossval('mse',X,y,'partition',cp,...
                 'Predfun',@(xtrain,ytrain,xtest) cv_sven(xtrain,ytrain,xtest,t,lambda2)); % perform CV to get a MSE
             nmse = mse/mse0;
             accsven(i) = nmse;
