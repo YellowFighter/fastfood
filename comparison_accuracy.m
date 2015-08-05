@@ -56,18 +56,18 @@ for k = 1:length(n_values)
             %% Built-in lasso
             mses = [];
             r2s = [];
-            for n = 1:cp.NumTestSets
-                trIdx = cp.training(n);
-                teIdx = cp.test(n);
+            for j = 1:cp.NumTestSets
+                trIdx = cp.training(j);
+                teIdx = cp.test(j);
                 ytest = cv_lasso(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,options);
                 % MSE
-                mses(n) = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
+                mses(j) = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
                 
                 % R^2
                 ssres = sum((ytest-y(teIdx)).^2);
                 sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
                 r2 = 1-(ssres/sstot);
-                r2s(n) = r2;
+                r2s(j) = r2;
             end
             mse = mean(mses);
             nmse = mse/mse0;
@@ -80,16 +80,16 @@ for k = 1:length(n_values)
             %% SVEN
             mses = [];
             r2s = [];
-            for n = 1:cp.NumTestSets
-                trIdx = cp.training(n);
-                teIdx = cp.test(n);
+            for j = 1:cp.NumTestSets
+                trIdx = cp.training(j);
+                teIdx = cp.test(j);
                 ytest = cv_sven(X(trIdx,:),y(trIdx),X(teIdx,:),t,lambda2);
-                mses(n) = 1/length(ytest)*sum((ytest-y(teIdx)).^2); % MSE
+                mses(j) = 1/length(ytest)*sum((ytest-y(teIdx)).^2); % MSE
                 % R^2
                 ssres = sum((y(teIdx)-ytest).^2);
                 sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
                 r2 = 1-(ssres/sstot);
-                r2s(n) = r2;
+                r2s(j) = r2;
             end
             mse = mean(mses);
             nmse = mse/mse0;
@@ -102,18 +102,18 @@ for k = 1:length(n_values)
             %% FFEN
             mses = [];
             r2s = [];
-            for n = 1:cp.NumTestSets
-                trIdx = cp.training(n);
-                teIdx = cp.test(n);
+            for j = 1:cp.NumTestSets
+                trIdx = cp.training(j);
+                teIdx = cp.test(j);
                 ytest = cv_ffen(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,options);
                 % MSE
-                mses(n) = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
+                mses(j) = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
                 
                 % R^2
                 ssres = sum((ytest-y(teIdx)).^2);
                 sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
                 r2 = 1-(ssres/sstot);
-                r2s(n) = r2;
+                r2s(j) = r2;
             end
             mse = mean(mses);
             nmse = mse/mse0;
