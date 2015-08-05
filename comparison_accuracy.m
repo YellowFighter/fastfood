@@ -71,7 +71,7 @@ for k = 1:length(n_values)
             mse = crossval('mse',X,y,'partition',cp,...
                 'Predfun',@(xtrain,ytrain,xtest) cv_ffen(xtrain,ytrain,xtest,alpha,lambda2,options)); % perform CV to get a MSE
             nmse = mse/mse0;
-            accfen(i) = nmse;
+            accffen(i) = nmse;
             fprintf('\t\taccffen = %f\n',accffen(i));
         end
         
