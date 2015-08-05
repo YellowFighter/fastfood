@@ -54,17 +54,17 @@ for k = 1:length(n_values)
             %% Built-in lasso
             acclasso(i) = crossval('mse',X,y,'partition',cp,...
                 'Predfun',@(xtrain,ytrain,xtest) cv_lasso(xtrain,ytrain,xtest,alpha,lambda2,options)); % perform CV to get a MSE
-             fprintf('\t\tacclasso = %f\n',mean(acclasso));
+             fprintf('\t\tacclasso = %f\n',acclasso(i));
             
             %% SVEN
             accsven(i) = crossval('mse',X,y,'partition',cp,...
                 'Predfun',@(xtrain,ytrain,xtest) cv_sven(xtrain,ytrain,xtest,t,lambda2)); % perform CV to get a MSE
-            fprintf('\t\taccsven = %f\n',mean(accsven));
+            fprintf('\t\taccsven = %f\n',accsven(i));
             
             %% FFEN
             accffen(i) = crossval('mse',X,y,'partition',cp,...
                 'Predfun',@(xtrain,ytrain,xtest) cv_ffen(xtrain,ytrain,xtest,alpha,lambda2,options)); % perform CV to get a MSE
-            fprintf('\t\taccffen = %f\n',mean(accffen));
+            fprintf('\t\taccffen = %f\n',accffen(i));
         end
         
         accuracy_data{k,z} = {};
