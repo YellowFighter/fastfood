@@ -7,7 +7,6 @@ catch
     use_spiral = 0;
 end
 
-ntimes = 1;
 frac_nonzero = 0.1;
 
 n_values = [10000,100000];
