@@ -43,7 +43,7 @@ for k = 1:length(n_values)
             y = y_func(X,r);
             X = zscore(X); % mean center and unit variance
             y = zscore(y); % mean center and unit variance
-            mse0 = (1/size(y,1))*sum((y-mean(y)).^2);
+            mse0 = (1/size(y,1))*sum((y-mean(ytest)).^2);
             
             %% (Hyper-)params
             lambda2 = 0.1;
@@ -54,25 +54,74 @@ for k = 1:length(n_values)
             cp = cvpartition(n,'kfold',5); % create the 5-fold partitions
             
             %% Built-in lasso
-            mse = crossval('mse',X,y,'partition',cp,...
-                'Predfun',@(xtrain,ytrain,xtest) cv_lasso(xtrain,ytrain,xtest,alpha,lambda2,options)); % perform CV to get a MSE
+            mses = [];
+            r2s = [];
+            for n = 1:cp.NumTestSets
+                trIdx = cp.training(n);
+                teIdx = cp.test(n);
+                ytest = cv_lasso(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,options);
+                % MSE
+                mses(n) = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
+                
+                % R^2
+                ssres = sum((ytest-y(teIdx)).^2);
+                sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
+                r2 = 1-(ssres/sstot);
+                r2s(n) = r2;
+            end
+            mse = mean(mses);
             nmse = mse/mse0;
-            acclasso(i) = nmse;
-            fprintf('\t\tacclasso = %f\n',acclasso(i));
+            r2 = mean(r2s);
+            %mse = crossval('mse',X,y,'partition',cp,...
+            %    'Predfun',@(xtrain,ytrain,xtest) cv_lasso(xtrain,ytrain,xtest,alpha,lambda2,options)); % perform CV to get a MSE
+            acclasso(i,:) = [nmse,r2];
+            fprintf('\t\tacclasso nmse = %f, r^2 = %f\n',acclasso(i,1),acclasso(i,2));
             
             %% SVEN
-            mse = crossval('mse',X,y,'partition',cp,...
-                'Predfun',@(xtrain,ytrain,xtest) cv_sven(xtrain,ytrain,xtest,t,lambda2)); % perform CV to get a MSE
+            mses = [];
+            r2s = [];
+            for n = 1:cp.NumTestSets
+                trIdx = cp.training(n);
+                teIdx = cp.test(n);
+                ytest = cv_sven(X(trIdx,:),y(trIdx),X(teIdx,:),t,lambda2);
+                mses(n) = 1/length(ytest)*sum((ytest-y(teIdx)).^2); % MSE
+                % R^2
+                ssres = sum((y(teIdx)-ytest).^2);
+                sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
+                r2 = 1-(ssres/sstot);
+                r2s(n) = r2;
+            end
+            mse = mean(mses);
             nmse = mse/mse0;
-            accsven(i) = nmse;
-            fprintf('\t\taccsven = %f\n',accsven(i));
+            r2 = mean(r2s);
+%             mse = crossval('mse',X,y,'partition',cp,...
+%                 'Predfun',@(xtrain,ytrain,xtest) cv_sven(xtrain,ytrain,xtest,t,lambda2)); % perform CV to get a MSE
+            accsven(i,:) = [nmse,r2];
+            fprintf('\t\taccsven nmse = %f, r^2 = %f\n',accsven(i,1),accsven(i,2));
             
             %% FFEN
-            mse = crossval('mse',X,y,'partition',cp,...
-                'Predfun',@(xtrain,ytrain,xtest) cv_ffen(xtrain,ytrain,xtest,alpha,lambda2,options)); % perform CV to get a MSE
+            mses = [];
+            r2s = [];
+            for n = 1:cp.NumTestSets
+                trIdx = cp.training(n);
+                teIdx = cp.test(n);
+                ytest = cv_ffen(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,options);
+                % MSE
+                mses(n) = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
+                
+                % R^2
+                ssres = sum((ytest-y(teIdx)).^2);
+                sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
+                r2 = 1-(ssres/sstot);
+                r2s(n) = r2;
+            end
+            mse = mean(mses);
             nmse = mse/mse0;
-            accffen(i) = nmse;
-            fprintf('\t\taccffen = %f\n',accffen(i));
+            r2 = mean(r2s);
+%             mse = crossval('mse',X,y,'partition',cp,...
+%                 'Predfun',@(xtrain,ytrain,xtest) cv_sven(xtrain,ytrain,xtest,t,lambda2)); % perform CV to get a MSE
+            accffen(i,:) = [nmse,r2];
+            fprintf('\t\taccffen nmse = %f, r^2 = %f\n',accffen(i,1),accffen(i,2));
         end
         
         accuracy_data{k,z} = {};
@@ -91,9 +140,14 @@ for k = 1:length(n_values)
         accsven = accuracy_data{k,z}.accsven;
         accffen = accuracy_data{k,z}.accffen;
         fprintf('ntimes = %d, frac_nonzero = %f, n = %d, d = %d\n',ntimes,frac_nonzero,n,d);
-        fprintf('acclasso: %f, %f\n',mean(acclasso),std(acclasso));
-        fprintf('accsven: %f, %f\n',mean(accsven),std(accsven));
-        fprintf('accffen: %f, %f\n',mean(accffen),std(accffen));
+        % NMSE
+        fprintf('acclasso nmse: %f, %f\n',mean(acclasso(:,1)),std(acclasso(:,1)));
+        fprintf('accsven nmse: %f, %f\n',mean(accsven(:,1)),std(accsven(:,1)));
+        fprintf('accffen nmse: %f, %f\n',mean(accffen(:,1)),std(accffen(:,1)));
+        % R^2
+        fprintf('acclasso r^2: %f, %f\n',mean(acclasso(:,2)),std(acclasso(:,2)));
+        fprintf('accsven r^2: %f, %f\n',mean(accsven(:,2)),std(accsven(:,2)));
+        fprintf('accffen r^2: %f, %f\n',mean(accffen(:,2)),std(accffen(:,2)));
     end
 end
 
