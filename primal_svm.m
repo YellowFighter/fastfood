@@ -65,7 +65,7 @@ function [sol,b,obj] = primal_svm(X,Y,K,linear,lambda,opt)
   % The last component of the solution is the bias b.
   b = sol(end);
   sol = sol(1:end-1);
-  fprintf('\n');
+%   fprintf('\n');
   
   
 function  [w,obj] = primal_svm_linear(Y,lambda,opt) 
@@ -106,13 +106,13 @@ function  [w,obj] = primal_svm_linear(Y,lambda,opt)
     [t,out] = line_search_linear(w,step,out,Y,lambda);
     
     w = w + t*step;
-    fprintf(['Iter = %d, Obj = %f, Nb of sv = %d, Newton decr = %.3f, ' ...
-             'Line search = %.3f'],iter,obj,length(sv),-step'*grad/2,t);
-    if opt.lin_cg
-        fprintf(', Lin CG acc = %.4f     \n',relres);
-    else
-        fprintf('      \n');
-    end;
+%     fprintf(['Iter = %d, Obj = %f, Nb of sv = %d, Newton decr = %.3f, ' ...
+%              'Line search = %.3f'],iter,obj,length(sv),-step'*grad/2,t);
+%     if opt.lin_cg
+%         fprintf(', Lin CG acc = %.4f     \n',relres);
+%     else
+%         fprintf('      \n');
+%     end;
     
     if -step'*grad < opt.prec * obj  
       % Stop when the Newton decrement is small enough
@@ -147,7 +147,7 @@ function  [w, obj] = primal_svm_linear_cg(Y,lambda,opt)
       
     % Compute the new gradient
     [obj, gn] = obj_fun_linear(w,Y,lambda,out); gn=-gn;
-    fprintf('Iter = %d, Obj = %f, Norm of grad = %.3f     \n',iter,obj,norm(gn));
+    %fprintf('Iter = %d, Obj = %f, Norm of grad = %.3f     \n',iter,obj,norm(gn));
       
     % Stop when the relative decrease in the objective function is small 
     if t*s'*go < opt.prec*obj, break; end;
@@ -266,13 +266,13 @@ function [beta,obj] = primal_svm_nonlinear(Y,lambda,opt)
     [t, Kb] = line_search_nonlinear(step([training; end]),Kb,beta(end),Y,lambda,1);
     beta = beta + t*step; 
 
-    fprintf('n = %d, iter = %d, obj = %f, nb of sv = %d, line srch = %.4f',...
-            [n iter obj length(sv) t]);
-    if opt.lin_cg
-        fprintf(', Lin CG acc = %.4f     \n',relres);
-    else
-        fprintf('      \n');
-    end;
+    %fprintf('n = %d, iter = %d, obj = %f, nb of sv = %d, line srch = %.4f',...
+    %        [n iter obj length(sv) t]);
+%     if opt.lin_cg
+%         fprintf(', Lin CG acc = %.4f     \n',relres);
+%     else
+%         fprintf('      \n');
+%     end;
 
   end;
   sol = beta;
@@ -306,7 +306,7 @@ function  [beta, obj] = primal_svm_nonlinear_cg(Y,lambda,opt)
     % Compute new gradient and objective.
     % Note that the gradient is already "divided" by the preconditioner
     [obj, grad] = obj_fun_nonlinear(beta,Y,lambda,Kb); gn = -grad;
-    fprintf('Iter = %d, Obj = %f, Norm grad = %f     \n',iter,obj,norm(gn));
+%     fprintf('Iter = %d, Obj = %f, Norm grad = %f     \n',iter,obj,norm(gn));
     
     % Stop when the relative decrease in the objective function is small 
     if t*s'*Kgo < opt.prec*obj, break; end;
