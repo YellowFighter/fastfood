@@ -59,12 +59,12 @@ for k = 1:length(n_values)
             %% SVEN
             accsven(i) = crossval('mse',X,y,'partition',cp,...
                 'Predfun',@(xtrain,ytrain,xtest) cv_sven(xtrain,ytrain,xtest,t,lambda2)); % perform CV to get a MSE
-            fprintf('\t\accsven = %f\n',accsven);
+            fprintf('\t\taccsven = %f\n',accsven);
             
             %% FFEN
             accffen(i) = crossval('mse',X,y,'partition',cp,...
                 'Predfun',@(xtrain,ytrain,xtest) cv_ffen(xtrain,ytrain,xtest,alpha,lambda2,options)); % perform CV to get a MSE
-            fprintf('\t\accffen = %f\n',accffen);
+            fprintf('\t\taccffen = %f\n',accffen);
         end
         
         accuracy_data{k,z} = {};
