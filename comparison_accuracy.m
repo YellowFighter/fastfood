@@ -43,7 +43,7 @@ for k = 1:length(n_values)
             y = y_func(X,r);
             X = zscore(X); % mean center and unit variance
             y = zscore(y); % mean center and unit variance
-            mse0 = (1/size(y,1))*sum((y-mean(ytest)).^2);
+            mse0 = (1/size(y,1))*sum((y-mean(y)).^2);
             
             %% (Hyper-)params
             lambda2 = 0.1;
