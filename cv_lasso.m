@@ -7,5 +7,10 @@ function yfit = cv_lasso( xtrain,ytrain,xtest, alpha,lambda2 )
 % options: an instance of statset
 % fits a LASSO model and predicts the labels for xtest
 
-B = lasso(xtrain,ytrain,'alpha',alpha,'lambda',lambda2); % perform LASSO on the projections to learn regression coefficients
+[Bfull,fitinfo] = lasso(xtrain,ytrain,'CV',2);%,'alpha',alpha,'lambda',lambda2); % perform LASSO on the projections to learn regression coefficients
+%minMSE = min(fitinfo.MSE);
+%ix = find(minMSE == fitinfo.MSE);
+ix = find(fitinfo.LambdaMinMSE == fitinfo.Lambda);
+B = Bfull(:,ix);
+%B = lasso(xtrain,ytrain,'alpha',alpha,'lambda',lambda2); % perform LASSO on the projections to learn regression coefficients
 yfit = xtest*B; % perform regression

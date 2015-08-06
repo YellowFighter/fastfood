@@ -9,27 +9,20 @@ end
 
 frac_nonzero = 1;
 
-n_values = [1000];
-d_values = [50];
 accuracy_data = {};
 
 X = dlmread('madelon_train.data',' ');
-size(X)
+[n,d] = size(X)
 y = dlmread('madelon_train.labels',' ');
-size(y)
 
-y_func = @(X,r,shuffle) ((X(:,shuffle) + X)*r + randn(size(X,1),1)*100); % linear function
+%y_func = @(X,r) X*r + randn(size(X,1),1)*.1; % linear function
 %y_func = @(X,r,shuffle) (X.*X(:,shuffle))*r + randn(size(X,1),1)*.1;
 
-for k = 1:length(n_values)
-    n = n_values(k);
-    for z = 1:length(d_values)
-        d = d_values(z);
         fprintf('data n = %d, d = %d\n',n,d);
         
         shuffle = randperm(d);
-        X = 1+(10-1)*rand(n,d);
-        r = zeros(size(X,2),1);
+        %X = randn(n,d);
+        %r = zeros(size(X,2),1);
         inxs = randperm(d);
         num_nonzero = round(frac_nonzero*d);
         ugly = [-1,1];
@@ -38,11 +31,10 @@ for k = 1:length(n_values)
             ugly_inxs = randperm(2);
             s(j) = ugly(ugly_inxs(1));
         end
-        r(inxs(1:num_nonzero)) = s.*(3 + 2*rand(1,num_nonzero));
-        y = y_func(X,r,shuffle);
-        %y = y_func(X,r);
-        %X = zscore(X); % mean center and unit variance
-        %y = zscore(y); % mean center and unit variance
+        %r(inxs(1:num_nonzero)) = s.*(3 + 2*rand(1,num_nonzero));
+        %y = y_func(X,r,shuffle);
+        X = zscore(X); % mean center and unit variance
+        y = zscore(y); % mean center and unit variance
         mse0 = (1/size(y,1))*sum((y-mean(y)).^2);
 
         %% (Hyper-)params
@@ -52,9 +44,9 @@ for k = 1:length(n_values)
         N = d*20; % number of basis functions to use for approximation
         para = FastfoodPara(N,d); % generate FF parameters
         cp = cvpartition(n,'holdout',0.3); % hold out 30% for testing
-        sigma = 10; % band-width of Gaussian kernel
+        sigma = 1; % band-width of Gaussian kernel
 
-lkjdf
+lkdjf
 
         %% Built-in lasso
         trIdx = cp.training;
@@ -99,8 +91,6 @@ lkjdf
         accuracy_data{k,z}.acclasso = acclasso;
         accuracy_data{k,z}.accsven = accsven;
         accuracy_data{k,z}.accffen = accffen;
-    end
-end
 
 fprintf('\n');
 for k = 1:length(n_values)
@@ -122,7 +112,7 @@ for k = 1:length(n_values)
         accs = [acclasso; accsven; accffen];
         fname = fullfile('results','nonlinear',sprintf('n-%d_d-%d.csv',n,d));
         csvwrite(fname,accs);
-    end
+   end
 end
 
 if use_parallel

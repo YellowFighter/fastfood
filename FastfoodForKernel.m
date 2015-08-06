@@ -73,6 +73,8 @@ else
         G = para.G{ii};
         PI = para.PI{ii};
 %         keyboard
+	size(B)
+	size(XX)
         XX = bsxfun(@times, XX, B);
 %         keyboard
         T = fwht(XX, d, 'hadamard');
