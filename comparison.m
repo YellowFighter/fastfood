@@ -70,7 +70,7 @@ for k = 1:length(n_values)
             trIdx = cp.training(l);
             teIdx = cp.test(l);
             tic;
-            ytest = cv_lasso(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2);
+            ytest = cv_lasso(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,options);
             timlasso = toc;
             mse = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
             ssres = sum((ytest-y(teIdx)).^2);
@@ -89,7 +89,7 @@ for k = 1:length(n_values)
             trIdx = cp.training(l);
             teIdx = cp.test(l);
             tic;
-            ytest = cv_sven(X(trIdx,:),y(trIdx),X(teIdx,:),t,lambda2);
+            ytest = cv_sven(X(trIdx,:),y(trIdx),X(teIdx,:),t,lambda2,options);
             timsven = toc;
             mse = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
             ssres = sum((ytest-y(teIdx)).^2);
@@ -109,7 +109,7 @@ for k = 1:length(n_values)
             trIdx = cp.training(l);
             teIdx = cp.test(l);
             tic;
-            ytest = cv_ffen(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,para,sigma,use_spiral);
+            ytest = cv_ffen(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,para,sigma,use_spiral,options);
             timffen = toc;
             mse = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
             ssres = sum((ytest-y(teIdx)).^2);
