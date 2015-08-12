@@ -308,6 +308,7 @@ for k = 1:length(n_values)
     end
 end
 f = fopen('results.csv');
+fwrite('linear,n,d,r2,r2std,nmse,nmsestd,time,timestd\n');
 for i=1:length(lines)
     fwrite(f,lines{i});
 end
