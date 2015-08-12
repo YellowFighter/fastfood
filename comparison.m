@@ -17,7 +17,7 @@ catch
 end
 options = statset('UseParallel',use_parallel);
 
-ntimes = 1;
+%ntimes = 1;
 frac_nonzero = 0.1;
 
 n_values = [100,1000,10000,100000];
@@ -104,8 +104,8 @@ for k = 1:length(n_values)
         accsffen = {}; % accuracies
         timsffen = {}; % times
         for l=1:cp.NumTestSets
-            trIdx = cp.training;
-            teIdx = cp.test;
+            trIdx = cp.training(l);
+            teIdx = cp.test(l);
             tic;
             ytest = cv_ffen(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,para,sigma,use_spiral);
             timffen = toc;
@@ -206,8 +206,8 @@ for k = 1:length(n_values)
         accsffen = {}; % accuracies
         timsffen = {}; % times
         for l=1:cp.NumTestSets
-            trIdx = cp.training;
-            teIdx = cp.test;
+            trIdx = cp.training(l);
+            teIdx = cp.test(l);
             tic;
             ytest = cv_ffen(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,para,sigma,use_spiral);
             timffen = toc;
