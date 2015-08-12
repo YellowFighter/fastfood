@@ -4,24 +4,26 @@ rng(1);
 warning('off','all');
 try % test whether we can use Spiral package
     fwht_spiral([1; 1]);
-    use_spiral = 1;
+    use_spiral = 1
 catch
-    use_spiral = 0;
+    use_spiral = 0
 end
 try
     matlabpool open;
-    use_parallel = true;
+    use_parallel = true
 catch
      disp('Unable to open matlab pool.');
-     use_parallel = false;
+     use_parallel = false
 end
 options = statset('UseParallel',use_parallel);
 
-%ntimes = 1;
-frac_nonzero = 0.1;
+%ntimes = 1
+frac_nonzero = 0.1
 
-n_values = [100,1000,10000,100000];
-d_values = [100,1000,10000,100000,1000000];
+% n_values = [100,1000,10000,100000]
+% d_values = [100,1000,10000,100000,1000000]
+n_values = [100,1000]%,10000,100000];
+d_values = [100,1000]%,10000,100000,1000000];
 
 y_func_linear = @(X,r) X*r + randn(size(X,1),1)*.1; % linear function
 y_func_nonlinear = @(X,r,shuffle) (X.*X(:,shuffle))*r + randn(size(X,1),1)*.1;
