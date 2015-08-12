@@ -1,4 +1,4 @@
-function yfit = cv_sven( xtrain,ytrain,xtest, t,lambda2 )
+function yfit = cv_sven( xtrain,ytrain,xtest, t,lambda2, options )
 % xtrain: rows are samples, columns are variables
 % ytrain: vector of labels
 % xtest: same as xtrain
