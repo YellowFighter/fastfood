@@ -20,14 +20,12 @@ options = statset('UseParallel',use_parallel);
 %ntimes = 1
 frac_nonzero = 0.1
 
-% n_values = [100,1000,10000,100000]
-% d_values = [100,1000,10000,100000,1000000]
-n_values = [100,1000]%,10000,100000];
-d_values = [100,1000]%,10000,100000,1000000];
+n_values = [100,1000,10000]%,100000]
+d_values = [100,1000,10000,100000]%,1000000]
 
 y_func_linear = @(X,r) X*r + randn(size(X,1),1)*.1; % linear function
-y_func_nonlinear = @(X,r,shuffle) (X.*X(:,shuffle))*r + randn(size(X,1),1)*.1;
-cvpart = @(n) cvpartition(n,'kfold',5);
+y_func_nonlinear = @(X,r,shuffle) (X(:,shuffle).*X)*r + randn(size(X,1),1)*.1;
+cvpart = @(n) cvpartition(n,'kfold',2);
 
 %% Linear
 disp('Running linear comparison.');
@@ -64,8 +62,8 @@ for k = 1:length(n_values)
         cp = cvpart(n);
 
         %% Built-in lasso
-        accslasso = {}; % accuracies
-        timslasso = {}; % times
+        accslasso = []; % accuracies
+        timslasso = []; % times
         for l=1:cp.NumTestSets
             fprintf('Linear LASSO n=%d,d=%d l=%d\n',n,d,l);
             trIdx = cp.training(l);
@@ -79,13 +77,13 @@ for k = 1:length(n_values)
             r2 = 1-(ssres/sstot);
             nmse = mse/mse0;
             acclasso = [nmse,r2];
-            accslasso{l} = acclasso;
-            timslasso{l} = timlasso;
+            accslasso(l,:) = acclasso;
+            timslasso(l) = timlasso;
         end
 
         %% SVEN
-        accssven = {}; % accuracies
-        timssven = {}; % times
+        accssven = []; % accuracies
+        timssven = []; % times
         for l=1:cp.NumTestSets
             fprintf('Linear SVEN n=%d,d=%d l=%d\n',n,d,l);
             trIdx = cp.training(l);
@@ -99,14 +97,14 @@ for k = 1:length(n_values)
             r2 = 1-(ssres/sstot);
             nmse = mse/mse0;
             accsven = [nmse,r2];
-            accssven{l} = accsven;
-            timssven{l} = timsven;
+            accssven(l,:) = accsven;
+            timssven(l) = timsven;
         end
 
 
         %% FFEN
-        accsffen = {}; % accuracies
-        timsffen = {}; % times
+        accsffen = []; % accuracies
+        timsffen = []; % times
         for l=1:cp.NumTestSets
             fprintf('Linear FFEN n=%d,d=%d l=%d\n',n,d,l);
             trIdx = cp.training(l);
@@ -120,8 +118,8 @@ for k = 1:length(n_values)
             r2 = 1-(ssres/sstot);
             nmse = mse/mse0;
             accffen = [nmse,r2];
-            accsffen{l} = accffen;
-            timsffen{l} = timffen;
+            accsffen(l,:) = accffen;
+            timsffen(l) = timffen;
         end
 
         
@@ -136,6 +134,7 @@ for k = 1:length(n_values)
 end
 
 %% Non Linear
+disp('Note: the shuffling that occurs to create the nonlinear dataset differs for every (n,d) pair.');
 data_nonlinear = {};
 for k = 1:length(n_values)
     n = n_values(k);
@@ -144,6 +143,7 @@ for k = 1:length(n_values)
         fprintf('nonlinear, n = %d, d = %d\n',n,d);
         
         X = randn(n,d);
+        shuffle = randperm(d);
         r = zeros(size(X,2),1);
         inxs = randperm(d);
         num_nonzero = round(frac_nonzero*d);
@@ -154,7 +154,7 @@ for k = 1:length(n_values)
             s(j) = ugly(ugly_inxs(1));
         end
         r(inxs(1:num_nonzero)) = s.*(3 + 2*rand(1,num_nonzero));
-        y = y_func_nonlinear(X,r);
+        y = y_func_nonlinear(X,r,shuffle);
         X = zscore(X); % mean center and unit variance
         y = zscore(y); % mean center and unit variance
         mse0 = (1/size(y,1))*sum((y-mean(y)).^2);
@@ -169,8 +169,8 @@ for k = 1:length(n_values)
         cp = cvpart(n);
 
         %% Built-in lasso
-        accslasso = {}; % accuracies
-        timslasso = {}; % times
+        accslasso = []; % accuracies
+        timslasso = []; % times
         for l=1:cp.NumTestSets
             fprintf('NonLinear LASSO n=%d,d=%d l=%d\n',n,d,l);
             trIdx = cp.training(l);
@@ -184,13 +184,13 @@ for k = 1:length(n_values)
             r2 = 1-(ssres/sstot);
             nmse = mse/mse0;
             acclasso = [nmse,r2];
-            accslasso{l} = acclasso;
-            timslasso{l} = timlasso;
+            accslasso(l,:) = acclasso;
+            timslasso(l) = timlasso;
         end
 
         %% SVEN
-        accssven = {}; % accuracies
-        timssven = {}; % times
+        accssven = []; % accuracies
+        timssven = []; % times
         for l=1:cp.NumTestSets
             fprintf('NonLinear SVEN n=%d,d=%d l=%d\n',n,d,l);
             trIdx = cp.training(l);
@@ -204,14 +204,14 @@ for k = 1:length(n_values)
             r2 = 1-(ssres/sstot);
             nmse = mse/mse0;
             accsven = [nmse,r2];
-            accssven{l} = accsven;
-            timssven{l} = timsven;
+            accssven(l,:) = accsven;
+            timssven(l) = timsven;
         end
 
 
         %% FFEN
-        accsffen = {}; % accuracies
-        timsffen = {}; % times
+        accsffen = []; % accuracies
+        timsffen = []; % times
         for l=1:cp.NumTestSets
             fprintf('NonLinear FFEN n=%d,d=%d l=%d\n',n,d,l);
             trIdx = cp.training(l);
@@ -225,8 +225,8 @@ for k = 1:length(n_values)
             r2 = 1-(ssres/sstot);
             nmse = mse/mse0;
             accffen = [nmse,r2];
-            accsffen{l} = accffen;
-            timsffen{l} = timffen;
+            accsffen(l,:) = accffen;
+            timsffen(l) = timffen;
         end
 
         
@@ -242,7 +242,8 @@ end
 
 %% store results
 disp('Storing results.');
-lines = {};
+lin_lines = {};
+nonlin_lines = {};
 for k = 1:length(n_values)
     n = n_values(k);
     for z = 1:length(d_values)
@@ -251,9 +252,9 @@ for k = 1:length(n_values)
         acclasso = data_linear{k,z}.acclasso;
         accsven = data_linear{k,z}.accsven;
         accffen = data_linear{k,z}.accffen;
-        timlasso = data_linear{k,z}.timslasso;
-        timsven = data_linear{k,z}.timssven;
-        timffen = data_linear{k,z}.timsffen;
+        timlasso = data_linear{k,z}.timlasso;
+        timsven = data_linear{k,z}.timsven;
+        timffen = data_linear{k,z}.timffen;
         % lasso
         acclasso_nmse_mean = mean(acclasso(:,1));
         acclasso_nmse_std = std(acclasso(:,1));
@@ -275,17 +276,18 @@ for k = 1:length(n_values)
         accffen_r2_std = std(accffen(:,2));
         timffen_mean = mean(timffen);
         timffen_std = std(timffen);
-        line = sprintf('%d,%d,%d,%f,%f,%f,%f,%f,%f',...
+        line = sprintf('%d,%d,%d,%f,%f,%f,%f,%f,%f\n',...
             1,n,d,acclasso_r2_mean,acclasso_r2_std,acclasso_nmse_mean,acclasso_nmse_std,...
             timlasso_mean,timlasso_std);
-        lines{end+1} = line;
+        lin_lines{end+1} = line;
+        
         %nonlinear
         acclasso = data_nonlinear{k,z}.acclasso;
         accsven = data_nonlinear{k,z}.accsven;
         accffen = data_nonlinear{k,z}.accffen;
-        timlasso = data_nonlinear{k,z}.timslasso;
-        timsven = data_nonlinear{k,z}.timssven;
-        timffen = data_nonlinear{k,z}.timsffen;
+        timlasso = data_nonlinear{k,z}.timlasso;
+        timsven = data_nonlinear{k,z}.timsven;
+        timffen = data_nonlinear{k,z}.timffen;
         % lasso
         acclasso_nmse_mean = mean(acclasso(:,1));
         acclasso_nmse_std = std(acclasso(:,1));
@@ -310,13 +312,16 @@ for k = 1:length(n_values)
         line = sprintf('%d,%d,%d,%f,%f,%f,%f,%f,%f\n',...
             0,n,d,acclasso_r2_mean,acclasso_r2_std,acclasso_nmse_mean,acclasso_nmse_std,...
             timlasso_mean,timlasso_std);
-        lines{end+1} = line;
+        nonlin_lines{end+1} = line;
     end
 end
-f = fopen('results.csv');
-fwrite('linear,n,d,r2,r2std,nmse,nmsestd,time,timestd\n');
-for i=1:length(lines)
-    fwrite(f,lines{i});
+f = fopen('results.csv','wt');
+fprintf(f,'linear,n,d,r2,r2std,nmse,nmsestd,time,timestd\n');
+for i=1:length(lin_lines)
+    fwrite(f,lin_lines{i});
+end
+for i=1:length(nonlin_lines)
+    fwrite(f,nonlin_lines{i});
 end
 disp('Wrote results to "results.csv". All done.');
 
