@@ -18,6 +18,7 @@ end
 options = statset('UseParallel',use_parallel);
 
 %ntimes = 1
+nfold = 5
 frac_nonzero = 0.1
 
 n_values = [100,1000,10000]%,100000]
@@ -25,7 +26,7 @@ d_values = [100,1000,10000,100000]%,1000000]
 
 y_func_linear = @(X,r) X*r + randn(size(X,1),1)*.1; % linear function
 y_func_nonlinear = @(X,r,shuffle) (X(:,shuffle).*X)*r + randn(size(X,1),1)*.1;
-cvpart = @(n) cvpartition(n,'kfold',2);
+cvpart = @(n) cvpartition(n,'kfold',nfold);
 
 %% Linear
 disp('Running linear comparison.');
