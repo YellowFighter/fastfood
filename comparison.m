@@ -67,6 +67,7 @@ for k = 1:length(n_values)
         accslasso = {}; % accuracies
         timslasso = {}; % times
         for l=1:cp.NumTestSets
+            fprintf('Linear LASSO n=%d,d=%d\n l=%d',n,d,l);
             trIdx = cp.training(l);
             teIdx = cp.test(l);
             tic;
@@ -86,6 +87,7 @@ for k = 1:length(n_values)
         accssven = {}; % accuracies
         timssven = {}; % times
         for l=1:cp.NumTestSets
+            fprintf('Linear SVEN n=%d,d=%d\n l=%d',n,d,l);
             trIdx = cp.training(l);
             teIdx = cp.test(l);
             tic;
@@ -106,6 +108,7 @@ for k = 1:length(n_values)
         accsffen = {}; % accuracies
         timsffen = {}; % times
         for l=1:cp.NumTestSets
+            fprintf('Linear FFEN n=%d,d=%d\n l=%d',n,d,l);
             trIdx = cp.training(l);
             teIdx = cp.test(l);
             tic;
@@ -169,6 +172,7 @@ for k = 1:length(n_values)
         accslasso = {}; % accuracies
         timslasso = {}; % times
         for l=1:cp.NumTestSets
+            fprintf('NonLinear LASSO n=%d,d=%d\n l=%d',n,d,l);
             trIdx = cp.training(l);
             teIdx = cp.test(l);
             tic;
@@ -188,6 +192,7 @@ for k = 1:length(n_values)
         accssven = {}; % accuracies
         timssven = {}; % times
         for l=1:cp.NumTestSets
+            fprintf('NonLinear SVEN n=%d,d=%d\n l=%d',n,d,l);
             trIdx = cp.training(l);
             teIdx = cp.test(l);
             tic;
@@ -208,6 +213,7 @@ for k = 1:length(n_values)
         accsffen = {}; % accuracies
         timsffen = {}; % times
         for l=1:cp.NumTestSets
+            fprintf('NonLinear FFEN n=%d,d=%d\n l=%d',n,d,l);
             trIdx = cp.training(l);
             teIdx = cp.test(l);
             tic;
