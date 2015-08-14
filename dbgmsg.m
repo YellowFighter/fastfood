@@ -1,5 +1,6 @@
-function dbgmsg( varargin )
-global DEBUG
-if DEBUG
-    fprintf(varargin);
-end
+function dbgmsg( format,varargin )
+c = clock;
+ts = datestr(datenum(c{:}));
+format = sprintf('[%s] %s\n',ts,format);
+printf(format,varargin);
+
