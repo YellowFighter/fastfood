@@ -1,3 +1,5 @@
+dbgmsg('Starting');
+
 global DEBUG
 DEBUG = true;
 rng(1);

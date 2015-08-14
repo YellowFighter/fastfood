@@ -1,6 +1,5 @@
 function dbgmsg( format,varargin )
-c = clock;
-ts = datestr(datenum(c{:}));
+ts = datestr(now,'HH:MM:SS');
 format = sprintf('[%s] %s\n',ts,format);
 printf(format,varargin);
 
