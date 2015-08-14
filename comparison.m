@@ -1,3 +1,5 @@
+disp(datestr(datenum(c{:})));
+
 global DEBUG
 DEBUG = true;
 rng(1);
@@ -29,12 +31,14 @@ y_func_nonlinear = @(X,r,shuffle) (X(:,shuffle).*X)*r + randn(size(X,1),1)*.1;
 cvpart = @(n) cvpartition(n,'kfold',nfold);
 
 %% Linear
+disp(datestr(datenum(c{:})));
 disp('Running linear comparison.');
 data_linear = {};
 for k = 1:length(n_values)
     n = n_values(k);
     for z = 1:length(d_values)
         d = d_values(z);
+        disp(datestr(datenum(c{:})));
         fprintf('linear, n = %d, d = %d\n',n,d);
         
         X = randn(n,d);
@@ -66,6 +70,7 @@ for k = 1:length(n_values)
         accslasso = []; % accuracies
         timslasso = []; % times
         for l=1:cp.NumTestSets
+            disp(datestr(datenum(c{:})));
             fprintf('Linear LASSO n=%d,d=%d l=%d\n',n,d,l);
             trIdx = cp.training(l);
             teIdx = cp.test(l);
@@ -86,6 +91,7 @@ for k = 1:length(n_values)
         accssven = []; % accuracies
         timssven = []; % times
         for l=1:cp.NumTestSets
+            disp(datestr(datenum(c{:})));
             fprintf('Linear SVEN n=%d,d=%d l=%d\n',n,d,l);
             trIdx = cp.training(l);
             teIdx = cp.test(l);
@@ -107,6 +113,7 @@ for k = 1:length(n_values)
         accsffen = []; % accuracies
         timsffen = []; % times
         for l=1:cp.NumTestSets
+            disp(datestr(datenum(c{:})));
             fprintf('Linear FFEN n=%d,d=%d l=%d\n',n,d,l);
             trIdx = cp.training(l);
             teIdx = cp.test(l);
@@ -135,12 +142,14 @@ for k = 1:length(n_values)
 end
 
 %% Non Linear
+disp(datestr(datenum(c{:})));
 disp('Note: the shuffling that occurs to create the nonlinear dataset differs for every (n,d) pair.');
 data_nonlinear = {};
 for k = 1:length(n_values)
     n = n_values(k);
     for z = 1:length(d_values)
         d = d_values(z);
+        disp(datestr(datenum(c{:})));
         fprintf('nonlinear, n = %d, d = %d\n',n,d);
         
         X = randn(n,d);
@@ -173,6 +182,7 @@ for k = 1:length(n_values)
         accslasso = []; % accuracies
         timslasso = []; % times
         for l=1:cp.NumTestSets
+            disp(datestr(datenum(c{:})));
             fprintf('NonLinear LASSO n=%d,d=%d l=%d\n',n,d,l);
             trIdx = cp.training(l);
             teIdx = cp.test(l);
@@ -193,6 +203,7 @@ for k = 1:length(n_values)
         accssven = []; % accuracies
         timssven = []; % times
         for l=1:cp.NumTestSets
+            disp(datestr(datenum(c{:})));
             fprintf('NonLinear SVEN n=%d,d=%d l=%d\n',n,d,l);
             trIdx = cp.training(l);
             teIdx = cp.test(l);
@@ -214,6 +225,7 @@ for k = 1:length(n_values)
         accsffen = []; % accuracies
         timsffen = []; % times
         for l=1:cp.NumTestSets
+            disp(datestr(datenum(c{:})));
             fprintf('NonLinear FFEN n=%d,d=%d l=%d\n',n,d,l);
             trIdx = cp.training(l);
             teIdx = cp.test(l);
@@ -242,6 +254,7 @@ for k = 1:length(n_values)
 end
 
 %% store results
+disp(datestr(datenum(c{:})));
 disp('Storing results.');
 lin_lines = {};
 nonlin_lines = {};
@@ -324,8 +337,11 @@ end
 for i=1:length(nonlin_lines)
     fwrite(f,nonlin_lines{i});
 end
+disp(datestr(datenum(c{:})));
 disp('Wrote results to "results.csv". All done.');
 
 if use_parallel
     matlabpool close;
 end
+
+disp(datestr(datenum(c{:})));
