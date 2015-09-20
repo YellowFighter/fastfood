@@ -18,6 +18,7 @@ catch
      use_parallel = false
 end
 options = statset('UseParallel',use_parallel);
+use_gpu = true;
 
 %ntimes = 1
 nfold = 5
@@ -40,6 +41,9 @@ for k = 1:length(n_values)
         dbgmsg('linear, n = %d, d = %d',n,d);
         
         X = randn(n,d);
+        if use_gpu
+            X = gpuArray(X);
+        end
         r = zeros(size(X,2),1);
         inxs = randperm(d);
         num_nonzero = round(frac_nonzero*d);
