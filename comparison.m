@@ -1,10 +1,12 @@
+% TODO: rewrite parts of this framework for statically sized datasets
+
 dbgmsg('Starting');
 
 global DEBUG
 DEBUG = true;
 rng(1);
 warning('off','all');
-try % test whether we can use Spiral package
+try % test whether we can use Spiral package (c impl of FWHT)
     fwht_spiral([1; 1]);
     use_spiral = 1
 catch
@@ -38,6 +40,7 @@ X_nonlin = zscore(X_nonlin); % mean center and unit variance
 y_nonlin = zscore(y_nonlin); % mean center and unit variance
 mse0_nonlin = (1/size(y_nonlin,1))*sum((y_nonlin-mean(y_nonlin)).^2);
 
+% NOTE: doesn't need to be a func for statically sized datasets
 cvpart = @(n) cvpartition(n,'kfold',nfold);
 
 %% Linear
