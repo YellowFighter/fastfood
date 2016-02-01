@@ -23,13 +23,15 @@ ntimes = 1
 nfold = 5
 
 % load linear dataset, X_lin,y_lin
-% n_lin, d_lin
+[X_lin,y_lin] = load_linear_dataset()
+n_lin, d_lin = size(X_lin)
 X_lin = zscore(X_lin); % mean center and unit variance
 y_lin = zscore(y_lin); % mean center and unit variance
 mse0_lin = (1/size(y_lin,1))*sum((y_lin-mean(y_lin)).^2);
 
 % load nonlinear dataset, X_lin,y_lin
-% n_nonlin, d_nonlin
+[X_nonlin,y_nonlin] = load_nonlinear_dataset()
+n_nonlin, d_nonlin = size(X_nonlin)
 X_nonlin = zscore(X_nonlin); % mean center and unit variance
 y_nonlin = zscore(y_nonlin); % mean center and unit variance
 mse0_nonlin = (1/size(y_nonlin,1))*sum((y_nonlin-mean(y_nonlin)).^2);

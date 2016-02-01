@@ -18,7 +18,7 @@ for k = 1:ntimes
     accslasso = []; % accuracies
     timslasso = []; % times
     for l=1:cp.NumTestSets
-        dbgmsg('[%d] Linear LASSO l=%d',k,l);
+        dbgmsg('(%d) Linear LASSO l=%d',k,l);
         trIdx = cp.training(l);
         teIdx = cp.test(l);
         tic;
