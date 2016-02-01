@@ -18,235 +18,29 @@ catch
      use_parallel = false
 end
 options = statset('UseParallel',use_parallel);
-use_gpu = true;
 
-%ntimes = 1
+ntimes = 1
 nfold = 5
-frac_nonzero = 0.1
 
-n_values = [100,1000,10000]%,100000]
-d_values = [100,1000,10000,100000]%,1000000]
+% load linear dataset, X_lin,y_lin
+% n_lin, d_lin
+X_lin = zscore(X_lin); % mean center and unit variance
+y_lin = zscore(y_lin); % mean center and unit variance
+mse0_lin = (1/size(y_lin,1))*sum((y_lin-mean(y_lin)).^2);
 
-y_func_linear = @(X,r) X*r + randn(size(X,1),1)*.1; % linear function
-y_func_nonlinear = @(X,r,shuffle) (X(:,shuffle).*X)*r + randn(size(X,1),1)*.1;
+% load nonlinear dataset, X_lin,y_lin
+% n_nonlin, d_nonlin
+X_nonlin = zscore(X_nonlin); % mean center and unit variance
+y_nonlin = zscore(y_nonlin); % mean center and unit variance
+mse0_nonlin = (1/size(y_nonlin,1))*sum((y_nonlin-mean(y_nonlin)).^2);
+
 cvpart = @(n) cvpartition(n,'kfold',nfold);
 
 %% Linear
-dbgmsg('Running linear comparison.');
-data_linear = {};
-for k = 1:length(n_values)
-    n = n_values(k);
-    for z = 1:length(d_values)
-        d = d_values(z);
-        dbgmsg('linear, n = %d, d = %d',n,d);
-        
-        X = randn(n,d);
-        if use_gpu
-            X = gpuArray(X);
-        end
-        r = zeros(size(X,2),1);
-        inxs = randperm(d);
-        num_nonzero = round(frac_nonzero*d);
-        ugly = [-1,1];
-        s = [];
-        for j = 1:num_nonzero
-            ugly_inxs = randperm(2);
-            s(j) = ugly(ugly_inxs(1));
-        end
-        r(inxs(1:num_nonzero)) = s.*(3 + 2*rand(1,num_nonzero));
-        y = y_func_linear(X,r);
-        X = zscore(X); % mean center and unit variance
-        y = zscore(y); % mean center and unit variance
-        mse0 = (1/size(y,1))*sum((y-mean(y)).^2);
+data_linear = runcomparison( X_lin,y_nonlin,options,ntimes,'linear' );
 
-        %% (Hyper-)params
-        lambda2 = 0.1;
-        alpha = 0.5;
-        t = lambda2*alpha;
-        N = d*20; % number of basis functions to use for approximation
-        para = FastfoodPara(N,d); % generate FF parameters
-        sigma = 10; % band-width of Gaussian kernel
-        cp = cvpart(n);
-
-        %% Built-in lasso
-        accslasso = []; % accuracies
-        timslasso = []; % times
-        for l=1:cp.NumTestSets
-            dbgmsg('Linear LASSO n=%d,d=%d l=%d',n,d,l);
-            trIdx = cp.training(l);
-            teIdx = cp.test(l);
-            tic;
-            ytest = cv_lasso(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,options);
-            timlasso = toc;
-            mse = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
-            ssres = sum((ytest-y(teIdx)).^2);
-            sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
-            r2 = 1-(ssres/sstot);
-            nmse = mse/mse0;
-            acclasso = [nmse,r2];
-            accslasso(l,:) = acclasso;
-            timslasso(l) = timlasso;
-        end
-
-        %% SVEN
-        accssven = []; % accuracies
-        timssven = []; % times
-        for l=1:cp.NumTestSets
-            dbgmsg('Linear SVEN n=%d,d=%d l=%d',n,d,l);
-            trIdx = cp.training(l);
-            teIdx = cp.test(l);
-            tic;
-            ytest = cv_sven(X(trIdx,:),y(trIdx),X(teIdx,:),t,lambda2,options);
-            timsven = toc;
-            mse = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
-            ssres = sum((ytest-y(teIdx)).^2);
-            sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
-            r2 = 1-(ssres/sstot);
-            nmse = mse/mse0;
-            accsven = [nmse,r2];
-            accssven(l,:) = accsven;
-            timssven(l) = timsven;
-        end
-
-
-        %% FFEN
-        accsffen = []; % accuracies
-        timsffen = []; % times
-        for l=1:cp.NumTestSets
-            dbgmsg('Linear FFEN n=%d,d=%d l=%d',n,d,l);
-            trIdx = cp.training(l);
-            teIdx = cp.test(l);
-            tic;
-            ytest = cv_ffen(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,para,sigma,use_spiral,options);
-            timffen = toc;
-            mse = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
-            ssres = sum((ytest-y(teIdx)).^2);
-            sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
-            r2 = 1-(ssres/sstot);
-            nmse = mse/mse0;
-            accffen = [nmse,r2];
-            accsffen(l,:) = accffen;
-            timsffen(l) = timffen;
-        end
-
-        
-        data_linear{k,z} = {};
-        data_linear{k,z}.acclasso = accslasso;
-        data_linear{k,z}.accsven = accssven;
-        data_linear{k,z}.accffen = accsffen;
-        data_linear{k,z}.timlasso = timslasso;
-        data_linear{k,z}.timsven = timssven;
-        data_linear{k,z}.timffen = timsffen;
-    end
-end
-
-%% Non Linear
-disp(datestr(datenum(c{:})));
-disp('Note: the shuffling that occurs to create the nonlinear dataset differs for every (n,d) pair.');
-data_nonlinear = {};
-for k = 1:length(n_values)
-    n = n_values(k);
-    for z = 1:length(d_values)
-        d = d_values(z);
-        dbgmsg('nonlinear, n = %d, d = %d',n,d);
-        
-        X = randn(n,d);
-        shuffle = randperm(d);
-        r = zeros(size(X,2),1);
-        inxs = randperm(d);
-        num_nonzero = round(frac_nonzero*d);
-        ugly = [-1,1];
-        s = [];
-        for j = 1:num_nonzero
-            ugly_inxs = randperm(2);
-            s(j) = ugly(ugly_inxs(1));
-        end
-        r(inxs(1:num_nonzero)) = s.*(3 + 2*rand(1,num_nonzero));
-        y = y_func_nonlinear(X,r,shuffle);
-        X = zscore(X); % mean center and unit variance
-        y = zscore(y); % mean center and unit variance
-        mse0 = (1/size(y,1))*sum((y-mean(y)).^2);
-
-        %% (Hyper-)params
-        lambda2 = 0.1;
-        alpha = 0.5;
-        t = lambda2*alpha;
-        N = d*20; % number of basis functions to use for approximation
-        para = FastfoodPara(N,d); % generate FF parameters
-        sigma = 10; % band-width of Gaussian kernel
-        cp = cvpart(n);
-
-        %% Built-in lasso
-        accslasso = []; % accuracies
-        timslasso = []; % times
-        for l=1:cp.NumTestSets
-            dbgmsg('NonLinear LASSO n=%d,d=%d l=%d',n,d,l);
-            trIdx = cp.training(l);
-            teIdx = cp.test(l);
-            tic;
-            ytest = cv_lasso(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,options);
-            timlasso = toc;
-            mse = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
-            ssres = sum((ytest-y(teIdx)).^2);
-            sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
-            r2 = 1-(ssres/sstot);
-            nmse = mse/mse0;
-            acclasso = [nmse,r2];
-            accslasso(l,:) = acclasso;
-            timslasso(l) = timlasso;
-        end
-
-        %% SVEN
-        accssven = []; % accuracies
-        timssven = []; % times
-        for l=1:cp.NumTestSets
-            dbgmsg('NonLinear SVEN n=%d,d=%d l=%d',n,d,l);
-            trIdx = cp.training(l);
-            teIdx = cp.test(l);
-            tic;
-            ytest = cv_sven(X(trIdx,:),y(trIdx),X(teIdx,:),t,lambda2,options);
-            timsven = toc;
-            mse = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
-            ssres = sum((ytest-y(teIdx)).^2);
-            sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
-            r2 = 1-(ssres/sstot);
-            nmse = mse/mse0;
-            accsven = [nmse,r2];
-            accssven(l,:) = accsven;
-            timssven(l) = timsven;
-        end
-
-
-        %% FFEN
-        accsffen = []; % accuracies
-        timsffen = []; % times
-        for l=1:cp.NumTestSets
-            dbgmsg('NonLinear FFEN n=%d,d=%d l=%d',n,d,l);
-            trIdx = cp.training(l);
-            teIdx = cp.test(l);
-            tic;
-            ytest = cv_ffen(X(trIdx,:),y(trIdx),X(teIdx,:),alpha,lambda2,para,sigma,use_spiral,options);
-            timffen = toc;
-            mse = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
-            ssres = sum((ytest-y(teIdx)).^2);
-            sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
-            r2 = 1-(ssres/sstot);
-            nmse = mse/mse0;
-            accffen = [nmse,r2];
-            accsffen(l,:) = accffen;
-            timsffen(l) = timffen;
-        end
-
-        
-        data_nonlinear{k,z} = {};
-        data_nonlinear{k,z}.acclasso = accslasso;
-        data_nonlinear{k,z}.accsven = accssven;
-        data_nonlinear{k,z}.accffen = accsffen;
-        data_nonlinear{k,z}.timlasso = timslasso;
-        data_nonlinear{k,z}.timsven = timssven;
-        data_nonlinear{k,z}.timffen = timsffen;
-    end
-end
+%% Nonlinear
+data_nonlinear = runcomparison( X_nonlin,y_nonlin,options,ntimes,'nonlinear' );
 
 %% store results
 dbgmsg('Storing results.');
