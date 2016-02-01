@@ -1,4 +1,4 @@
-function [ data_out ] = runcomparison( X,y,options,ntimes,cmpname )
+function [ data_out ] = runcomparison( X,y,options,ntimes,cmpname,cvpart )
 
 dbgmsg('Running %s comparison.',cmpname);
 data_out = {};
