@@ -1,4 +1,12 @@
-function [ data_out ] = runcomparison( X,y,options,ntimes,cmpname,cvpart )
+function [ data_out ] = runcomparison( X,y,options,ntimes,cmpname,cvpart,d,n)
+mse0 = (1/size(y,1))*sum((y-mean(y)).^2);
+
+try % test whether we can use Spiral package (c impl of FWHT)
+    fwht_spiral([1; 1]);
+    use_spiral = 1
+catch
+    use_spiral = 0
+end
 
 dbgmsg('Running %s comparison.',cmpname);
 data_out = {};
@@ -14,6 +22,26 @@ for k = 1:ntimes
     sigma = 10; % band-width of Gaussian kernel
     cp = cvpart(n);
 
+    %% Built-in lin regresison using lasso
+    accslassoreg = []; % accuracies
+    timslassoreg = []; % times
+    for l=1:cp.NumTestSets
+        dbgmsg('(%d) Linear LASSO l=%d',k,l);
+        trIdx = cp.training(l);
+        teIdx = cp.test(l);
+        tic;
+        ytest = cv_lasso(X(trIdx,:),y(trIdx),X(teIdx,:),1,1,options); %Use plain old linear reg here
+        timlassoreg = toc;
+        mse = 1/length(ytest)*sum((ytest-y(teIdx)).^2);
+        ssres = sum((ytest-y(teIdx)).^2);
+        sstot = sum((y(teIdx)-mean(y(trIdx))).^2);
+        r2 = 1-(ssres/sstot);
+        nmse = mse/mse0;
+        acclassoreg = [nmse,r2];
+        accslassoreg(l,:) = acclassoreg;
+        timslassoreg(l) = timlassoreg;
+    end
+    
     %% Built-in lasso
     accslasso = []; % accuracies
     timslasso = []; % times
@@ -76,11 +104,12 @@ for k = 1:ntimes
     end
 
 
-    data_out{k,z} = {};
-    data_out{k,z}.acclasso = accslasso;
-    data_out{k,z}.accsven = accssven;
-    data_out{k,z}.accffen = accsffen;
-    data_out{k,z}.timlasso = timslasso;
-    data_out{k,z}.timsven = timssven;
-    data_out{k,z}.timffen = timsffen;
+    data_out{k} = {};
+    data_out{k}.acclasso = accslasso;
+    data_out{k}.acclassoreg = accslassoreg;
+    data_out{k}.accsven = accssven;
+    data_out{k}.accffen = accsffen;
+    data_out{k}.timlasso = timslasso;
+    data_out{k}.timsven = timssven;
+    data_out{k}.timffen = timsffen;
 end

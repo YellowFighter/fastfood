@@ -6,18 +6,14 @@ global DEBUG
 DEBUG = true;
 rng(1);
 warning('off','all');
-try % test whether we can use Spiral package (c impl of FWHT)
-    fwht_spiral([1; 1]);
-    use_spiral = 1
-catch
-    use_spiral = 0
-end
+
+use_parallel = false
 try
-    matlabpool open;
-    use_parallel = true
+    %matlabpool open;
+    %use_parallel = true
 catch
-     disp('Unable to open matlab pool.');
-     use_parallel = false
+     %disp('Unable to open matlab pool.');
+     %use_parallel = false
 end
 options = statset('UseParallel',use_parallel);
 
@@ -27,15 +23,15 @@ nfold = 5
 % load linear dataset, X_lin,y_lin
 % NOTE: could just make the size, zscore, and mse parts of the load fn
 % and return them
-[X_lin,y_lin] = load_linear_dataset()
-n_lin, d_lin = size(X_lin)
+[X_lin,y_lin,B_lin,errors_lin]=load_linear_dataset(100,10,0.001,1); 
+[n_lin, d_lin] = size(X_lin);
 X_lin = zscore(X_lin); % mean center and unit variance
 y_lin = zscore(y_lin); % mean center and unit variance
 mse0_lin = (1/size(y_lin,1))*sum((y_lin-mean(y_lin)).^2);
 
 % load nonlinear dataset, X_nonlin,y_nonlin
-[X_nonlin,y_nonlin] = load_nonlinear_dataset()
-n_nonlin, d_nonlin = size(X_nonlin)
+[X_nonlin,y_nonlin] = load_cifar_10_dataset('/home/kopels/data/cifar-10-batches-mat');
+[n_nonlin, d_nonlin] = size(X_nonlin);
 X_nonlin = zscore(X_nonlin); % mean center and unit variance
 y_nonlin = zscore(y_nonlin); % mean center and unit variance
 mse0_nonlin = (1/size(y_nonlin,1))*sum((y_nonlin-mean(y_nonlin)).^2);
@@ -44,7 +40,7 @@ mse0_nonlin = (1/size(y_nonlin,1))*sum((y_nonlin-mean(y_nonlin)).^2);
 cvpart = @(n) cvpartition(n,'kfold',nfold);
 
 %% Linear
-data_linear = runcomparison( X_lin,y_nonlin,options,ntimes,'linear' );
+data_linear = runcomparison( X_lin,y_nonlin,options,ntimes,'linear',cvpart, d_lin, 10);
 
 %% Nonlinear
 data_nonlinear = runcomparison( X_nonlin,y_nonlin,options,ntimes,'nonlinear' );
