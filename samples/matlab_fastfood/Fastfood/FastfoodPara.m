@@ -37,6 +37,7 @@ for ii = 1:k
     %% prepare matrix for Fastfood
     B{ii} = randsrc(d, 1, [1 -1]);
     G{ii} = randn(d, 1);
+    %keyboard
     T = randperm(d);
     PI{ii} = T(:);
     % Chi distribution
@@ -50,7 +51,10 @@ for ii = 1:k
 end
 S1 = zeros(n, 1);
 for ii = 1:k
-    S1(((ii-1)*d+1):(ii*d)) = S{ii};
+    idx1 = ((ii-1)*d+1);
+    idx2 = (ii*d);
+    %keyboard
+    S1(idx1:idx2) = S{ii};
 end
 
 %keyboard

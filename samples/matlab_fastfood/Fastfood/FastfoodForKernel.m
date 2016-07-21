@@ -72,10 +72,11 @@ else
         B = para.B{ii};
         G = para.G{ii};
         PI = para.PI{ii};
-%         keyboard
+        %keyboard
         XX = bsxfun(@times, XX, B);
 %         keyboard
         T = fwht(XX, d, 'hadamard');
+        %keyboard
         %csvwrite(strcat('fwht-xx-',int2str(ii),'.csv'),T);
         T = T(PI, :);
         T = bsxfun(@times, T, G*d);
