@@ -5,4 +5,6 @@ samples/**/*.csv
 data_sets/
 .Rhistory
 ~*
-
+**/.idea/
+**/*.png
+**/*.pyc
