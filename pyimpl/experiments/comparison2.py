@@ -1,10 +1,12 @@
+from __future__ import print_function
 from os import path
 import numpy as np
 import numpy.random as rand
 import matplotlib.pyplot as plt
 from sklearn.datasets import fetch_mldata
-# from sklearn.linear_model import ElasticNetCV
-from sklearn.linear_model import enet_path
+from sklearn.linear_model import ElasticNetCV
+from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.cross_validation import train_test_split
 
 __doc__ = "See newcomparison.m"
 
@@ -15,27 +17,20 @@ data_root = path.expanduser('~/data')
 
 # Load MNIST data
 mnist = fetch_mldata('MNIST original', data_home=data_root)
-# N, D = mnist.data.shape
 X = mnist.data
 y = mnist.target
-# mnist.data.shape == (70000, 784)
-# mnist.target.shape == (70000,)
-# np.unique(mnist.target) == array([0., 1., 2., 3., 4., 5., 6., 7., 8., 9.])
 
-# random_state=0 for reproducibility
-# en = ElasticNetCV(cv=k_fold, n_jobs=-1, random_state=0)
-# en.fit(X, y)
+# Split into train/test_frac
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=test_frac, random_state=0)
 
+# Construct and fit model
+en = ElasticNetCV(cv=k_fold, n_jobs=-1, random_state=0)
+en.fit(X_train, y_train)
 
-# Compute paths
-# alphas_enet, coefs_enet, _ = enet_path(X, y)
+# Evaluate performance
+y_pred = np.round(en.predict(X_test))
+conf_mat = confusion_matrix(y_test, y_pred)
+acc = accuracy_score(y_test, y_pred)
 
-# Display results
-plt.figure()
-ax = plt.gca()
-l2 = plt.plot(-np.log10(alphas_enet), coefs_enet.T, linestyle='--')
-plt.xlabel('-Log(alpha)')
-plt.ylabel('coefficients')
-plt.title('Elastic-Net Paths')
-plt.axis('tight')
-plt.savefig('comparison2.svg')
+print(acc)
