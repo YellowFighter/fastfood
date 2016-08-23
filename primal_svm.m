@@ -37,7 +37,6 @@ function [sol,b,obj] = primal_svm(X,Y,K,linear,lambda,opt)
   if ~isfield(opt,'cg_prec'),           opt.cg_prec = 1e-4;                end;  
   if ~isfield(opt,'cg_it'),             opt.cg_it = 20;                    end;  
   
-  
   % Call the right function depending on problem type and CG / Newton 
   % Also check that X / K exists and that the dimension of Y is correct
   if  linear 
@@ -46,9 +45,9 @@ function [sol,b,obj] = primal_svm(X,Y,K,linear,lambda,opt)
     if issparse(X), opt.lin_cg = 1; end;
     if size(Y,1)~=n, error('Dimension error'); end;
     if ~opt.cg
-      [sol,obj] = primal_svm_linear   (Y,lambda,opt);
+      [sol,obj] = primal_svm_linear   (X,Y,lambda,opt);
     else
-      [sol,obj] = primal_svm_linear_cg(Y,lambda,opt);
+      [sol,obj] = primal_svm_linear_cg(X,Y,lambda,opt);
     end;
     
   else
@@ -56,9 +55,9 @@ function [sol,b,obj] = primal_svm(X,Y,K,linear,lambda,opt)
     n = size(Y,1);
     if any(size(K)~=n), error('Dimension error'); end;
     if ~opt.cg 
-      [sol,obj] = primal_svm_nonlinear   (Y,lambda,opt); 
+      [sol,obj] = primal_svm_nonlinear   (K,Y,lambda,opt); 
     else
-      [sol,obj] = primal_svm_nonlinear_cg(Y,lambda,opt); 
+      [sol,obj] = primal_svm_nonlinear_cg(K,Y,lambda,opt); 
     end;
     
   end;
@@ -68,11 +67,11 @@ function [sol,b,obj] = primal_svm(X,Y,K,linear,lambda,opt)
 %   fprintf('\n');
   
   
-function  [w,obj] = primal_svm_linear(Y,lambda,opt) 
+function  [w,obj] = primal_svm_linear(X,Y,lambda,opt) 
 % -------------------------------
 % Train a linear SVM using Newton 
 % -------------------------------
-  global X % it's only global from the function above, not really "global"
+  %global X % it's only global from the function above, not really "global"
   [n,d] = size(X);
     
   w = zeros(d+1,1); % The last component of w is b.
@@ -120,11 +119,11 @@ function  [w,obj] = primal_svm_linear(Y,lambda,opt)
     end;
   end;
  
-function  [w, obj] = primal_svm_linear_cg(Y,lambda,opt)
+function  [w, obj] = primal_svm_linear_cg(X,Y,lambda,opt)
 % -----------------------------------------------------
 % Train a linear SVM using nonlinear conjugate gradient 
 % -----------------------------------------------------
-  global X;
+  %global X;
   [n,d] = size(X);
     
   w = zeros(d+1,1); % The last component of w is b.
@@ -206,11 +205,11 @@ function [t,out] = line_search_linear(w,d,out,Y,lambda)
   
 
   
-function [beta,obj] = primal_svm_nonlinear(Y,lambda,opt)
+function [beta,obj] = primal_svm_nonlinear(K,Y,lambda,opt)
 % -----------------------------------
 % Train a non-linear SVM using Newton
 % -----------------------------------
-  global K
+  %global K
   
   training = find(Y);   % The points with 0 are ignored.
   n = length(training); % The real number of training points
@@ -218,7 +217,7 @@ function [beta,obj] = primal_svm_nonlinear(Y,lambda,opt)
     perm = randperm(n);
     ind = training(perm(1:round(.75*n)));  % Take a random subset of size n/4
     Y2 = Y; Y2(ind) = 0;
-    beta = primal_svm_nonlinear(Y2,lambda,opt);
+    beta = primal_svm_nonlinear(K,Y2,lambda,opt);
     sv = find(beta(1:end-1)~=0);
     Kb = K(training,sv)*beta(sv);  % Kb will always contains K times the current beta
   else
@@ -263,7 +262,7 @@ function [beta,obj] = primal_svm_nonlinear(Y,lambda,opt)
 
     % Do line search, but with a preference for a full Newton step
     step = beta_new - beta; 
-    [t, Kb] = line_search_nonlinear(step([training; end]),Kb,beta(end),Y,lambda,1);
+    [t, Kb] = line_search_nonlinear(K,step([training; end]),Kb,beta(end),Y,lambda,1);
     beta = beta + t*step; 
 
     %fprintf('n = %d, iter = %d, obj = %f, nb of sv = %d, line srch = %.4f',...
@@ -277,11 +276,11 @@ function [beta,obj] = primal_svm_nonlinear(Y,lambda,opt)
   end;
   sol = beta;
 
-function  [beta, obj] = primal_svm_nonlinear_cg(Y,lambda,opt)
+function  [beta, obj] = primal_svm_nonlinear_cg(K,Y,lambda,opt)
 % -----------------------------------------------------
 % Train a linear SVM using nonlinear conjugate gradient 
 % -----------------------------------------------------
-  global K;
+  %global K;
   n = length(K);
     
   beta = zeros(n+1,1); % The last component of beta is b.
@@ -300,7 +299,7 @@ function  [beta, obj] = primal_svm_nonlinear_cg(Y,lambda,opt)
     end;
       
     % Do an exact line search
-    [t,Kb] = line_search_nonlinear(s,Kb,beta(end),Y,lambda,0,Ks);
+    [t,Kb] = line_search_nonlinear(K,s,Kb,beta(end),Y,lambda,0,Ks);
     beta = beta + t*s;
       
     % Compute new gradient and objective.
@@ -328,7 +327,7 @@ function  [beta, obj] = primal_svm_nonlinear_cg(Y,lambda,opt)
 function [t, Kb] = line_search_nonlinear(step,Kb,b,Y,lambda,fullstep,Ks)
  % Given the current solution (as given by Kb), do a line sesrch in 
  % direction step. First try to take a full step if fullstep = 1.
-  global K;
+  %global K;
   training = find(Y~=0);
   act = find(step(1:end-1));  % The set of points for which beta change
   if nargin<7
